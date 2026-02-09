@@ -19,6 +19,15 @@ export interface DrawingStroke {
   thickness: number;
 }
 
+export interface MapImage {
+  id: string;
+  dataUrl: string;
+  position: Position;
+  width: number;
+  height: number;
+  zIndex: number;
+}
+
 export type CreatureRole = 'caster' | 'fighter' | 'tank' | 'ranged' | 'support' | 'skirmisher';
 
 export interface Spell {
@@ -94,5 +103,15 @@ export interface Entity {
 
 export interface MapData {
   drawings: DrawingStroke[];
+  images: MapImage[];
+  entityPositions: Record<string, Position>; // entityId -> position mapping
   showGrid?: boolean;
+}
+
+export interface Map {
+  id: string;
+  name: string;
+  data: MapData;
+  createdAt: number;
+  updatedAt: number;
 }
