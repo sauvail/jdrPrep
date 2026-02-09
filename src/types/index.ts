@@ -52,4 +52,13 @@ export interface Entity {
 
 export interface MapData {
   drawings: DrawingStroke[];
+  entityPositions: Record<string, Position>; // entityId -> position mapping
+}
+
+export interface Map {
+  id: string;
+  name: string;
+  data: MapData;
+  createdAt: number;
+  updatedAt: number;
 }
