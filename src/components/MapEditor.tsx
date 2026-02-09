@@ -36,8 +36,11 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const [editedMapName, setEditedMapName] = useState('');
   const mapRef = useRef<HTMLDivElement>(null);
 
+  const GRID_SIZE = 69; // Size 15% bigger than character icon (60px × 1.15)
+
   const drawings = activeMap?.data.drawings || [];
   const entityPositions = activeMap?.data.entityPositions || {};
+  const showGrid = activeMap?.data.showGrid || false;
 
   const updateActiveMapData = (updates: Partial<Map['data']>) => {
     if (!activeMap) return;
@@ -129,6 +132,48 @@ const MapEditor: React.FC<MapEditorProps> = ({
     if (points.length === 0) return '';
     const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
     return path;
+  };
+
+  const renderGrid = () => {
+    if (!showGrid || !mapRef.current) return null;
+    
+    const rect = mapRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    
+    const lines = [];
+    
+    // Vertical lines
+    for (let x = 0; x <= width; x += GRID_SIZE) {
+      lines.push(
+        <line
+          key={`v-${x}`}
+          x1={x}
+          y1={0}
+          x2={x}
+          y2={height}
+          stroke="#ddd"
+          strokeWidth="1"
+        />
+      );
+    }
+    
+    // Horizontal lines
+    for (let y = 0; y <= height; y += GRID_SIZE) {
+      lines.push(
+        <line
+          key={`h-${y}`}
+          x1={0}
+          y1={y}
+          x2={width}
+          y2={y}
+          stroke="#ddd"
+          strokeWidth="1"
+        />
+      );
+    }
+    
+    return <g className="grid-layer">{lines}</g>;
   };
 
   const entitiesOnMap = entities.filter(e => entityPositions[e.id]);
@@ -252,6 +297,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         onThicknessChange={setSelectedThickness}
         onToggleDrawing={() => setIsDrawingMode(!isDrawingMode)}
         onClearDrawings={() => updateActiveMapData({ drawings: [] })}
+        onToggleGrid={() => updateActiveMapData({ showGrid: !showGrid })}
       />
 
       <div
@@ -264,6 +310,9 @@ const MapEditor: React.FC<MapEditorProps> = ({
         style={{ cursor: isDrawingMode ? 'crosshair' : 'default' }}
       >
         <svg className="connection-layer">
+          {/* Grid */}
+          {renderGrid()}
+          
           {/* Drawings */}
           {drawings.map((stroke) => (
             <path

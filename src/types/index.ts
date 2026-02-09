@@ -21,6 +21,43 @@ export interface DrawingStroke {
 
 export type CreatureRole = 'caster' | 'fighter' | 'tank' | 'ranged' | 'support' | 'skirmisher';
 
+export interface Spell {
+  id: string;
+  name: string;
+  level: number;
+  school?: string;
+  castingTime?: string;
+  range?: string;
+  duration?: string;
+  description?: string;
+}
+
+export interface Weapon {
+  id: string;
+  name: string;
+  damage?: string;
+  weaponType?: string;
+  traits?: string[];
+  description?: string;
+}
+
+export interface Armor {
+  id: string;
+  name: string;
+  armorClass?: number;
+  armorType?: string;
+  traits?: string[];
+  description?: string;
+}
+
+export interface Pet {
+  id: string;
+  name: string;
+  species?: string;
+  level?: number;
+  description?: string;
+}
+
 export interface EncounterCreature {
   id: string;
   name: string;
@@ -48,11 +85,16 @@ export interface Entity {
   createdAt: number;
   updatedAt: number;
   encounterData?: EncounterData;
+  spells?: Spell[];
+  weapons?: Weapon[];
+  armors?: Armor[];
+  pets?: Pet[];
 }
 
 export interface MapData {
   drawings: DrawingStroke[];
   entityPositions: Record<string, Position>; // entityId -> position mapping
+  showGrid?: boolean;
 }
 
 export interface Map {
