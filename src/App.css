@@ -836,3 +836,287 @@ body {
 .unmapped-entities li:hover {
   background: #e9ecef;
 }
+
+/* Character Builder Styles */
+.character-builder {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.character-builder h3 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #3498db;
+}
+
+.character-builder h4 {
+  color: #34495e;
+  margin: 1.5rem 0 1rem;
+  font-size: 1.1rem;
+}
+
+.character-basics {
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.form-field select,
+.form-field input[type="number"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.ability-scores {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.scores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ability-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.ability-score label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  text-transform: capitalize;
+}
+
+.ability-score input {
+  width: 80px;
+  padding: 0.5rem;
+  text-align: center;
+  border: 2px solid #3498db;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.ability-score .modifier {
+  margin-top: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #3498db;
+}
+
+.derived-stats {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  font-size: 1.1rem;
+}
+
+.stat-item strong {
+  color: #2c3e50;
+  margin-right: 0.5rem;
+}
+
+.init-scores-btn {
+  padding: 0.75rem 1.5rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.init-scores-btn:hover {
+  background: #2980b9;
+}
+
+.features-section {
+  margin: 1.5rem 0;
+}
+
+.features-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.5rem;
+}
+
+.features-list li {
+  padding: 0.75rem;
+  background: #e8f4f8;
+  border-left: 3px solid #3498db;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.spells-section,
+.attacks-section {
+  margin: 1.5rem 0;
+}
+
+.no-items {
+  color: #999;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}
+
+.spells-list,
+.attacks-list {
+  list-style: none;
+  margin-bottom: 1rem;
+}
+
+.spell-item,
+.attack-item {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #9b59b6;
+}
+
+.attack-item {
+  border-left-color: #e74c3c;
+}
+
+.spell-header,
+.attack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.spell-header strong,
+.attack-header strong {
+  color: #2c3e50;
+  font-size: 1.05rem;
+}
+
+.spell-level {
+  background: #9b59b6;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.spell-description {
+  color: #555;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.spell-stats,
+.attack-stats {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.spell-stats strong,
+.attack-stats strong {
+  color: #2c3e50;
+}
+
+.remove-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-btn:hover {
+  background: #c0392b;
+}
+
+.add-spell-form,
+.add-attack-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.add-spell-form input,
+.add-attack-form input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.add-spell-form .form-actions,
+.add-attack-form .form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-btn {
+  padding: 0.75rem 1.5rem;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.add-btn:hover {
+  background: #229954;
+}
