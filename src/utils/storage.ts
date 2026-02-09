@@ -1,8 +1,9 @@
-import { Entity, EntityType, MapData } from '../types';
+import { Entity, EntityType, Map } from '../types';
 import { generateId } from './idGenerator';
 
 const STORAGE_KEY = 'jdrprep_entities';
-const MAP_STORAGE_KEY = 'jdrprep_map_data';
+const MAPS_STORAGE_KEY = 'jdrprep_maps';
+const ACTIVE_MAP_KEY = 'jdrprep_active_map';
 
 export const loadEntities = (): Entity[] => {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -13,13 +14,57 @@ export const saveEntities = (entities: Entity[]): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entities));
 };
 
-export const loadMapData = (): MapData => {
-  const stored = localStorage.getItem(MAP_STORAGE_KEY);
-  return stored ? JSON.parse(stored) : { drawings: [] };
+// Multiple Maps Support
+export const loadMaps = (): Map[] => {
+  const stored = localStorage.getItem(MAPS_STORAGE_KEY);
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  // Migration: check for old map data
+  const oldMapData = localStorage.getItem('jdrprep_map_data');
+  if (oldMapData) {
+    const parsed = JSON.parse(oldMapData);
+    const defaultMap = createMap('Default Map');
+    defaultMap.data.drawings = parsed.drawings || [];
+    defaultMap.data.showGrid = parsed.showGrid || false;
+    return [defaultMap];
+  }
+  // Create default map
+  return [createMap('Default Map')];
 };
 
-export const saveMapData = (mapData: MapData): void => {
-  localStorage.setItem(MAP_STORAGE_KEY, JSON.stringify(mapData));
+export const saveMaps = (maps: Map[]): void => {
+  localStorage.setItem(MAPS_STORAGE_KEY, JSON.stringify(maps));
+};
+
+export const getActiveMapId = (): string | null => {
+  return localStorage.getItem(ACTIVE_MAP_KEY);
+};
+
+export const setActiveMapId = (mapId: string): void => {
+  localStorage.setItem(ACTIVE_MAP_KEY, mapId);
+};
+
+export const createMap = (name: string): Map => {
+  return {
+    id: generateId('map'),
+    name,
+    data: {
+      drawings: [],
+      entityPositions: {},
+      showGrid: false,
+    },
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+};
+
+export const updateMap = (map: Map, updates: Partial<Map>): Map => {
+  return {
+    ...map,
+    ...updates,
+    updatedAt: Date.now(),
+  };
 };
 
 export const createEntity = (type: EntityType, name: string, description: string): Entity => {
@@ -68,7 +113,7 @@ export const updateEntityPosition = (entity: Entity, position: { x: number; y: n
 // Export/Import functionality
 export interface ExportData {
   entities: Entity[];
-  mapData: MapData;
+  maps: Map[];
   exportedAt: number;
   version: string;
 }
@@ -76,9 +121,9 @@ export interface ExportData {
 export const exportData = (): ExportData => {
   return {
     entities: loadEntities(),
-    mapData: loadMapData(),
+    maps: loadMaps(),
     exportedAt: Date.now(),
-    version: '1.0',
+    version: '2.0',
   };
 };
 
@@ -89,27 +134,36 @@ export const importData = (data: ExportData): { success: boolean; error?: string
       return { success: false, error: 'Invalid data format: expected an object' };
     }
 
-    // Check version compatibility
-    if (data.version && data.version !== '1.0') {
-      return { success: false, error: `Incompatible version: ${data.version}. Expected version 1.0` };
-    }
-
+    // Check version compatibility - support both v1.0 (old format) and v2.0 (new format with maps)
+    const version = data.version || '1.0';
+    
     // Validate entities array
     if (data.entities && !Array.isArray(data.entities)) {
       return { success: false, error: 'Invalid entities format: expected an array' };
-    }
-
-    // Validate mapData
-    if (data.mapData && (!data.mapData.drawings || !Array.isArray(data.mapData.drawings))) {
-      return { success: false, error: 'Invalid map data format' };
     }
 
     // Import the data
     if (data.entities) {
       saveEntities(data.entities);
     }
-    if (data.mapData) {
-      saveMapData(data.mapData);
+
+    // Handle different versions
+    if (version === '2.0' && data.maps) {
+      // New format with multiple maps
+      if (!Array.isArray(data.maps)) {
+        return { success: false, error: 'Invalid maps format: expected an array' };
+      }
+      saveMaps(data.maps);
+    } else if ((data as any).mapData) {
+      // Old format with single mapData - migrate to new format
+      const oldMapData = (data as any).mapData;
+      const defaultMap = createMap('Imported Map');
+      defaultMap.data.drawings = oldMapData.drawings || [];
+      defaultMap.data.showGrid = oldMapData.showGrid || false;
+      saveMaps([defaultMap]);
+    } else {
+      // No map data - create a default empty map
+      saveMaps([createMap('Default Map')]);
     }
 
     return { success: true };

@@ -93,5 +93,14 @@ export interface Entity {
 
 export interface MapData {
   drawings: DrawingStroke[];
+  entityPositions: Record<string, Position>; // entityId -> position mapping
   showGrid?: boolean;
+}
+
+export interface Map {
+  id: string;
+  name: string;
+  data: MapData;
+  createdAt: number;
+  updatedAt: number;
 }

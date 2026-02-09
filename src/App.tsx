@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEntities } from './hooks/useEntities';
-import { createEntity, exportData, importData, ExportData } from './utils/storage';
+import { createEntity, loadMaps, saveMaps, getActiveMapId, setActiveMapId, createMap, exportData, importData, ExportData } from './utils/storage';
 import EntityList from './components/EntityList';
 import EntityDetail from './components/EntityDetail';
 import EntityForm from './components/EntityForm';
 import MapEditor from './components/MapEditor';
-import { Entity, EntityType } from './types';
+import { Entity, EntityType, Map } from './types';
 import './App.css';
 
 type View = 'entities' | 'map';
@@ -15,6 +15,28 @@ function App() {
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentView, setCurrentView] = useState<View>('entities');
+  const [maps, setMaps] = useState<Map[]>([]);
+  const [activeMapId, setActiveMapIdState] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadedMaps = loadMaps();
+    setMaps(loadedMaps);
+    
+    const savedActiveMapId = getActiveMapId();
+    if (savedActiveMapId && loadedMaps.find(m => m.id === savedActiveMapId)) {
+      setActiveMapIdState(savedActiveMapId);
+      setActiveMapId(savedActiveMapId);
+    } else if (loadedMaps.length > 0) {
+      setActiveMapIdState(loadedMaps[0].id);
+      setActiveMapId(loadedMaps[0].id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (maps.length > 0) {
+      saveMaps(maps);
+    }
+  }, [maps]);
 
   const handleAddEntity = (type: EntityType, name: string, description: string) => {
     const newEntity = createEntity(type, name, description);
@@ -39,6 +61,13 @@ function App() {
       setSelectedEntity(null);
     }
   };
+
+  const handleMapChange = (mapId: string) => {
+    setActiveMapIdState(mapId);
+    setActiveMapId(mapId);
+  };
+
+  const activeMap = maps.find(m => m.id === activeMapId) || null;
 
   const handleExport = () => {
     const data = exportData();
@@ -70,8 +99,13 @@ function App() {
         
         reloadEntities();
         setSelectedEntity(null);
-        // Reload the page to refresh all components including MapEditor
-        window.location.reload();
+        // Reload maps after import
+        const loadedMaps = loadMaps();
+        setMaps(loadedMaps);
+        if (loadedMaps.length > 0) {
+          setActiveMapIdState(loadedMaps[0].id);
+          setActiveMapId(loadedMaps[0].id);
+        }
       } catch (error) {
         alert('Import failed: Invalid JSON file format. Please check the file and try again.');
         console.error('Import error:', error);
@@ -168,7 +202,24 @@ function App() {
         ) : (
           <MapEditor
             entities={entities}
-            onUpdatePosition={(id, position) => handleUpdateEntity(id, { position })}
+            maps={maps}
+            activeMap={activeMap}
+            onUpdateMap={(updatedMap) => {
+              setMaps(maps.map(m => m.id === updatedMap.id ? updatedMap : m));
+            }}
+            onCreateMap={(name) => {
+              const newMap = createMap(name);
+              setMaps([...maps, newMap]);
+              handleMapChange(newMap.id);
+            }}
+            onDeleteMap={(mapId) => {
+              const filteredMaps = maps.filter(m => m.id !== mapId);
+              setMaps(filteredMaps);
+              if (activeMapId === mapId && filteredMaps.length > 0) {
+                handleMapChange(filteredMaps[0].id);
+              }
+            }}
+            onMapChange={handleMapChange}
           />
         )}
       </main>
