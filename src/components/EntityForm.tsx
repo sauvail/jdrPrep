@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EntityType } from '../types';
+import MarkdownEditor from './MarkdownEditor';
 
 interface EntityFormProps {
   onSubmit: (type: EntityType, name: string, description: string) => void;
@@ -52,11 +53,10 @@ const EntityForm: React.FC<EntityFormProps> = ({ onSubmit, onCancel }) => {
       </div>
       <div className="form-group">
         <label htmlFor="description">Description:</label>
-        <textarea
-          id="description"
+        <MarkdownEditor
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Enter description..."
+          onChange={setDescription}
+          placeholder="Enter description (supports markdown)..."
           rows={4}
         />
       </div>
