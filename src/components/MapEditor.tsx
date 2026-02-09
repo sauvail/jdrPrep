@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Entity, DrawingStroke, Position } from '../types';
 import { loadMapData, saveMapData } from '../utils/storage';
+import { generateId } from '../utils/idGenerator';
 import DrawingTools from './DrawingTools';
 
 interface MapEditorProps {
@@ -58,7 +59,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
   const handleMouseUp = () => {
     if (isDrawingMode && isDrawing && currentStroke.length > 0) {
       const newStroke: DrawingStroke = {
-        id: `stroke_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+        id: generateId('stroke'),
         points: currentStroke,
         color: selectedColor,
         thickness: selectedThickness,

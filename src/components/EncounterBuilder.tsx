@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EncounterCreature, EncounterData, CreatureRole } from '../types';
+import { generateId } from '../utils/idGenerator';
 
 interface EncounterBuilderProps {
   encounterData: EncounterData;
@@ -36,6 +37,7 @@ const EncounterBuilder: React.FC<EncounterBuilderProps> = ({ encounterData, onUp
       const levelDiff = creature.level - partyLevel;
       let creatureXP = 10; // base XP for creature at party level
       
+      // PF2 XP values based on creature level relative to party
       if (levelDiff === -4) creatureXP = 2;
       else if (levelDiff === -3) creatureXP = 3;
       else if (levelDiff === -2) creatureXP = 4;
@@ -45,7 +47,7 @@ const EncounterBuilder: React.FC<EncounterBuilderProps> = ({ encounterData, onUp
       else if (levelDiff === 2) creatureXP = 20;
       else if (levelDiff === 3) creatureXP = 30;
       else if (levelDiff === 4) creatureXP = 40;
-      else if (levelDiff >= 5) creatureXP = 60;
+      else if (levelDiff >= 5) creatureXP = 80; // High level threats
 
       totalXP += creatureXP * creature.quantity;
     });
@@ -123,7 +125,7 @@ ${special}`;
   const handleAddCreature = () => {
     if (newCreature.name.trim()) {
       const creature: EncounterCreature = {
-        id: `creature_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+        id: generateId('creature'),
         ...newCreature,
         statblock: generateStatblock(newCreature as EncounterCreature),
       };
@@ -247,7 +249,7 @@ ${special}`;
               type="number"
               placeholder="Level"
               min="1"
-              max="25"
+              max="20"
               value={newCreature.level}
               onChange={(e) => setNewCreature({ ...newCreature, level: Number(e.target.value) })}
             />

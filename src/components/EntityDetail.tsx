@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Entity } from '../types';
 import { exportEntityToPDF } from '../utils/pdfExport';
+import { generateId } from '../utils/idGenerator';
 import EncounterBuilder from './EncounterBuilder';
 
 interface EntityDetailProps {
@@ -26,7 +27,7 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
   const handleAddConnection = () => {
     if (selectedTarget && connectionType) {
       const newConnection = {
-        id: `conn_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+        id: generateId('conn'),
         targetId: selectedTarget,
         type: connectionType,
         description: connectionDesc,
@@ -80,7 +81,11 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
           <p className="entity-description">{entity.description}</p>
           <div className="detail-actions">
             <button onClick={() => setIsEditing(true)}>Edit</button>
-            <button onClick={() => exportEntityToPDF(entity)} className="export-btn">
+            <button 
+              onClick={() => exportEntityToPDF(entity)} 
+              className="export-btn"
+              aria-label="Export entity to PDF"
+            >
               📄 Export to PDF
             </button>
           </div>

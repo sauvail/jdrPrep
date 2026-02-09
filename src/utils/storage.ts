@@ -1,4 +1,5 @@
 import { Entity, EntityType, MapData } from '../types';
+import { generateId } from './idGenerator';
 
 const STORAGE_KEY = 'jdrprep_entities';
 const MAP_STORAGE_KEY = 'jdrprep_map_data';
@@ -23,7 +24,7 @@ export const saveMapData = (mapData: MapData): void => {
 
 export const createEntity = (type: EntityType, name: string, description: string): Entity => {
   return {
-    id: `${type}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+    id: generateId(type),
     type,
     name,
     description,
@@ -35,7 +36,7 @@ export const createEntity = (type: EntityType, name: string, description: string
 
 export const addConnection = (entity: Entity, targetId: string, type: string, description?: string): Entity => {
   const connection = {
-    id: `conn_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+    id: generateId('conn'),
     targetId,
     type,
     description,

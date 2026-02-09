@@ -27,6 +27,7 @@ const DrawingTools: React.FC<DrawingToolsProps> = ({
         className={`tool-btn ${isDrawing ? 'active' : ''}`}
         onClick={onToggleDrawing}
         title="Toggle drawing mode"
+        aria-label={isDrawing ? "Turn off drawing mode" : "Turn on drawing mode"}
       >
         ✏️ {isDrawing ? 'Drawing Mode ON' : 'Drawing Mode OFF'}
       </button>
@@ -64,6 +65,7 @@ const DrawingTools: React.FC<DrawingToolsProps> = ({
             className="tool-btn clear-btn"
             onClick={onClearDrawings}
             title="Clear all drawings"
+            aria-label="Clear all drawings from map"
           >
             🗑️ Clear Drawings
           </button>
