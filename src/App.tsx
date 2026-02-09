@@ -61,17 +61,25 @@ function App() {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target?.result as string) as ExportData;
-        importData(data);
+        const result = importData(data);
+        
+        if (!result.success) {
+          alert(`Import failed: ${result.error}`);
+          return;
+        }
+        
         reloadEntities();
         setSelectedEntity(null);
         // Reload the page to refresh all components including MapEditor
         window.location.reload();
       } catch (error) {
-        alert('Error importing data. Please check the file format.');
+        alert('Import failed: Invalid JSON file format. Please check the file and try again.');
         console.error('Import error:', error);
       }
     };
     reader.readAsText(file);
+    // Reset the input value so the same file can be imported again if needed
+    event.target.value = '';
   };
 
   return (

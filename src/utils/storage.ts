@@ -82,11 +82,38 @@ export const exportData = (): ExportData => {
   };
 };
 
-export const importData = (data: ExportData): void => {
-  if (data.entities) {
-    saveEntities(data.entities);
-  }
-  if (data.mapData) {
-    saveMapData(data.mapData);
+export const importData = (data: ExportData): { success: boolean; error?: string } => {
+  try {
+    // Validate data structure
+    if (!data || typeof data !== 'object') {
+      return { success: false, error: 'Invalid data format: expected an object' };
+    }
+
+    // Check version compatibility
+    if (data.version && data.version !== '1.0') {
+      return { success: false, error: `Incompatible version: ${data.version}. Expected version 1.0` };
+    }
+
+    // Validate entities array
+    if (data.entities && !Array.isArray(data.entities)) {
+      return { success: false, error: 'Invalid entities format: expected an array' };
+    }
+
+    // Validate mapData
+    if (data.mapData && (!data.mapData.drawings || !Array.isArray(data.mapData.drawings))) {
+      return { success: false, error: 'Invalid map data format' };
+    }
+
+    // Import the data
+    if (data.entities) {
+      saveEntities(data.entities);
+    }
+    if (data.mapData) {
+      saveMapData(data.mapData);
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: `Import failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 };
