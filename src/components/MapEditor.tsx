@@ -21,7 +21,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
   const [showGrid, setShowGrid] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const GRID_SIZE = 60; // Size to match the character icon (60px)
+  const GRID_SIZE = 69; // Size 15% bigger than character icon (60px × 1.15)
 
   useEffect(() => {
     const mapData = loadMapData();
