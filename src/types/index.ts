@@ -48,6 +48,7 @@ export interface Entity {
   createdAt: number;
   updatedAt: number;
   encounterData?: EncounterData;
+  tags?: string[];
 }
 
 export interface MapData {

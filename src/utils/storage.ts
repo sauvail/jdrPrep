@@ -22,13 +22,14 @@ export const saveMapData = (mapData: MapData): void => {
   localStorage.setItem(MAP_STORAGE_KEY, JSON.stringify(mapData));
 };
 
-export const createEntity = (type: EntityType, name: string, description: string): Entity => {
+export const createEntity = (type: EntityType, name: string, description: string, tags: string[] = []): Entity => {
   return {
     id: generateId(type),
     type,
     name,
     description,
     connections: [],
+    tags,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };

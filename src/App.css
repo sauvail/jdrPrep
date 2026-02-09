@@ -836,3 +836,132 @@ body {
 .unmapped-entities li:hover {
   background: #e9ecef;
 }
+
+/* Tags */
+.tags-input-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tags-input-container input {
+  flex: 1;
+}
+
+.tags-input-container button {
+  padding: 0.5rem 1rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tags-input-container button:hover {
+  background: #2980b9;
+}
+
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: #e8f4f8;
+  color: #2c3e50;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  border: 1px solid #3498db;
+}
+
+.tag button {
+  background: transparent;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.25rem;
+}
+
+.tag button:hover {
+  color: #c0392b;
+}
+
+.entity-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+/* Tag Filters */
+.tag-filter-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.tag-filter-section h4 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tag-filter {
+  padding: 0.35rem 0.75rem;
+  background: #e9ecef;
+  color: #495057;
+  border: 1px solid #ced4da;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.tag-filter:hover {
+  background: #dee2e6;
+}
+
+.tag-filter.active {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.clear-filters {
+  padding: 0.35rem 0.75rem;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.clear-filters:hover {
+  background: #c0392b;
+}
+
+.no-results {
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}

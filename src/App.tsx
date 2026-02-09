@@ -16,8 +16,8 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [currentView, setCurrentView] = useState<View>('entities');
 
-  const handleAddEntity = (type: EntityType, name: string, description: string) => {
-    const newEntity = createEntity(type, name, description);
+  const handleAddEntity = (type: EntityType, name: string, description: string, tags: string[]) => {
+    const newEntity = createEntity(type, name, description, tags);
     addEntity(newEntity);
     setShowForm(false);
   };
