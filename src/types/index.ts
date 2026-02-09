@@ -52,4 +52,5 @@ export interface Entity {
 
 export interface MapData {
   drawings: DrawingStroke[];
+  showGrid?: boolean;
 }
