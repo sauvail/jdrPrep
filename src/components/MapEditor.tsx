@@ -293,6 +293,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         selectedColor={selectedColor}
         selectedThickness={selectedThickness}
         isDrawing={isDrawingMode}
+        showGrid={showGrid}
         onColorChange={setSelectedColor}
         onThicknessChange={setSelectedThickness}
         onToggleDrawing={() => setIsDrawingMode(!isDrawingMode)}
