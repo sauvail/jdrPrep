@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Entity, DrawingStroke, Position, Map } from '../types';
+import { Entity, DrawingStroke, Position, Map, MapImage } from '../types';
 import { updateMap } from '../utils/storage';
 import { generateId } from '../utils/idGenerator';
 import DrawingTools from './DrawingTools';
@@ -23,6 +23,9 @@ const MapEditor: React.FC<MapEditorProps> = ({
   onDeleteMap,
   onMapChange,
 }) => {
+  const MAX_IMPORTED_IMAGE_SIZE = 300;
+  const MIN_IMAGE_SIZE = 50;
+  
   const [draggedEntity, setDraggedEntity] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
@@ -34,11 +37,17 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const [newMapName, setNewMapName] = useState('');
   const [editingMapName, setEditingMapName] = useState(false);
   const [editedMapName, setEditedMapName] = useState('');
+  const [draggedImage, setDraggedImage] = useState<string | null>(null);
+  const [resizingImage, setResizingImage] = useState<string | null>(null);
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; imageId: string } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const GRID_SIZE = 69; // Size 15% bigger than character icon (60px × 1.15)
 
   const drawings = activeMap?.data.drawings || [];
+  const images = activeMap?.data.images || [];
   const entityPositions = activeMap?.data.entityPositions || {};
   const showGrid = activeMap?.data.showGrid || false;
 
@@ -52,6 +61,15 @@ const MapEditor: React.FC<MapEditorProps> = ({
     });
     onUpdateMap(updatedMap);
   };
+
+  // Close context menu on click outside
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    if (contextMenu) {
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
+  }, [contextMenu]);
 
   const handleMouseDown = (e: React.MouseEvent, entityId: string) => {
     if (isDrawingMode || !activeMap) return;
@@ -72,6 +90,38 @@ const MapEditor: React.FC<MapEditorProps> = ({
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       setCurrentStroke([...currentStroke, { x, y }]);
+    } else if (resizingImage && mapRef.current) {
+      const rect = mapRef.current.getBoundingClientRect();
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
+      const deltaX = currentX - resizeStart.x;
+      const deltaY = currentY - resizeStart.y;
+      
+      const newWidth = Math.max(MIN_IMAGE_SIZE, resizeStart.width + deltaX);
+      const newHeight = Math.max(MIN_IMAGE_SIZE, resizeStart.height + deltaY);
+      
+      updateActiveMapData({
+        images: images.map(img => 
+          img.id === resizingImage
+            ? { ...img, width: newWidth, height: newHeight }
+            : img
+        ),
+      });
+    } else if (draggedImage && mapRef.current) {
+      const rect = mapRef.current.getBoundingClientRect();
+      const draggedImg = images.find(img => img.id === draggedImage);
+      const imgWidth = draggedImg?.width || 100;
+      const imgHeight = draggedImg?.height || 100;
+      const x = Math.max(0, Math.min(rect.width - imgWidth, e.clientX - rect.left - dragOffset.x));
+      const y = Math.max(0, Math.min(rect.height - imgHeight, e.clientY - rect.top - dragOffset.y));
+      
+      updateActiveMapData({
+        images: images.map(img => 
+          img.id === draggedImage
+            ? { ...img, position: { x, y } }
+            : img
+        ),
+      });
     } else if (draggedEntity && mapRef.current && activeMap) {
       const rect = mapRef.current.getBoundingClientRect();
       const x = Math.max(0, Math.min(rect.width - 80, e.clientX - rect.left - dragOffset.x));
@@ -101,6 +151,8 @@ const MapEditor: React.FC<MapEditorProps> = ({
       setIsDrawing(false);
     } else {
       setDraggedEntity(null);
+      setDraggedImage(null);
+      setResizingImage(null);
     }
   };
 
@@ -112,6 +164,114 @@ const MapEditor: React.FC<MapEditorProps> = ({
       const y = e.clientY - rect.top;
       setCurrentStroke([{ x, y }]);
     }
+  };
+
+  const handleImageImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeMap) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        // Calculate dimensions maintaining aspect ratio, max size on longest side
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > MAX_IMPORTED_IMAGE_SIZE || height > MAX_IMPORTED_IMAGE_SIZE) {
+          if (width > height) {
+            height = (MAX_IMPORTED_IMAGE_SIZE / width) * height;
+            width = MAX_IMPORTED_IMAGE_SIZE;
+          } else {
+            width = (MAX_IMPORTED_IMAGE_SIZE / height) * width;
+            height = MAX_IMPORTED_IMAGE_SIZE;
+          }
+        }
+        
+        const newImage: MapImage = {
+          id: generateId('image'),
+          dataUrl,
+          position: { x: 50, y: 50 },
+          width,
+          height,
+          zIndex: images.length > 0 ? Math.max(...images.map(img => img.zIndex)) + 1 : 0,
+        };
+        updateActiveMapData({
+          images: [...images, newImage],
+        });
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleImageMouseDown = (e: React.MouseEvent, imageId: string) => {
+    if (isDrawingMode) return;
+    e.stopPropagation();
+    
+    const image = images.find(img => img.id === imageId);
+    if (image && mapRef.current) {
+      const rect = mapRef.current.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left - image.position.x;
+      const offsetY = e.clientY - rect.top - image.position.y;
+      setDragOffset({ x: offsetX, y: offsetY });
+      setDraggedImage(imageId);
+    }
+  };
+
+  const handleResizeMouseDown = (e: React.MouseEvent, imageId: string) => {
+    if (isDrawingMode) return;
+    e.stopPropagation();
+    
+    const image = images.find(img => img.id === imageId);
+    if (image && mapRef.current) {
+      const rect = mapRef.current.getBoundingClientRect();
+      setResizeStart({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        width: image.width,
+        height: image.height,
+      });
+      setResizingImage(imageId);
+    }
+  };
+
+  const handleDeleteImage = (imageId: string) => {
+    updateActiveMapData({
+      images: images.filter(img => img.id !== imageId),
+    });
+  };
+
+  const handleImageContextMenu = (e: React.MouseEvent, imageId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, imageId });
+  };
+
+  const bringToFront = (imageId: string) => {
+    const maxZIndex = Math.max(...images.map(img => img.zIndex));
+    updateActiveMapData({
+      images: images.map(img => 
+        img.id === imageId ? { ...img, zIndex: maxZIndex + 1 } : img
+      ),
+    });
+    setContextMenu(null);
+  };
+
+  const sendToBack = (imageId: string) => {
+    const minZIndex = Math.min(...images.map(img => img.zIndex));
+    updateActiveMapData({
+      images: images.map(img => 
+        img.id === imageId ? { ...img, zIndex: minZIndex - 1 } : img
+      ),
+    });
+    setContextMenu(null);
   };
 
   const getConnectionPath = (entity: Entity, targetEntity: Entity) => {
@@ -289,6 +449,14 @@ const MapEditor: React.FC<MapEditorProps> = ({
         </div>
       </div>
       
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageImport}
+        style={{ display: 'none' }}
+      />
+      
       <DrawingTools
         selectedColor={selectedColor}
         selectedThickness={selectedThickness}
@@ -299,6 +467,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         onToggleDrawing={() => setIsDrawingMode(!isDrawingMode)}
         onClearDrawings={() => updateActiveMapData({ drawings: [] })}
         onToggleGrid={() => updateActiveMapData({ showGrid: !showGrid })}
+        onImportImage={() => fileInputRef.current?.click()}
       />
 
       <div
@@ -361,6 +530,54 @@ const MapEditor: React.FC<MapEditorProps> = ({
           )}
         </svg>
 
+        {/* Imported Images */}
+        {images
+          .slice()
+          .sort((a, b) => a.zIndex - b.zIndex)
+          .map(image => (
+          <div
+            key={image.id}
+            className="map-image"
+            style={{
+              left: `${image.position.x}px`,
+              top: `${image.position.y}px`,
+              width: `${image.width}px`,
+              height: `${image.height}px`,
+              zIndex: image.zIndex,
+              cursor: isDrawingMode ? 'crosshair' : (draggedImage === image.id ? 'grabbing' : 'grab'),
+              pointerEvents: isDrawingMode ? 'none' : 'auto',
+            }}
+            onMouseDown={(e) => handleImageMouseDown(e, image.id)}
+            onContextMenu={(e) => handleImageContextMenu(e, image.id)}
+          >
+            <img
+              src={image.dataUrl}
+              alt="Map element"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              draggable={false}
+            />
+            {!isDrawingMode && (
+              <>
+                <button
+                  className="delete-image-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteImage(image.id);
+                  }}
+                  title="Delete image"
+                >
+                  ×
+                </button>
+                <div
+                  className="resize-handle"
+                  onMouseDown={(e) => handleResizeMouseDown(e, image.id)}
+                  title="Drag to resize"
+                />
+              </>
+            )}
+          </div>
+        ))}
+
         {entitiesOnMap.map(entity => {
           const position = entityPositions[entity.id];
           if (!position) return null;
@@ -403,6 +620,26 @@ const MapEditor: React.FC<MapEditorProps> = ({
           </div>
         )}
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          className="context-menu"
+          style={{
+            position: 'fixed',
+            top: `${contextMenu.y}px`,
+            left: `${contextMenu.x}px`,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button onClick={() => bringToFront(contextMenu.imageId)}>
+            Bring to Front
+          </button>
+          <button onClick={() => sendToBack(contextMenu.imageId)}>
+            Send to Back
+          </button>
+        </div>
+      )}
     </div>
   );
 };

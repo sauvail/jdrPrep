@@ -26,6 +26,7 @@ export const loadMaps = (): Map[] => {
     const parsed = JSON.parse(oldMapData);
     const defaultMap = createMap('Default Map');
     defaultMap.data.drawings = parsed.drawings || [];
+    defaultMap.data.images = parsed.images || [];
     defaultMap.data.showGrid = parsed.showGrid || false;
     return [defaultMap];
   }
@@ -51,6 +52,7 @@ export const createMap = (name: string): Map => {
     name,
     data: {
       drawings: [],
+      images: [],
       entityPositions: {},
       showGrid: false,
     },
