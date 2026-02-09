@@ -53,3 +53,11 @@ export interface Entity {
 export interface MapData {
   drawings: DrawingStroke[];
 }
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: number;
+  updatedAt: number;
+}

@@ -1,17 +1,27 @@
 import { useState } from 'react';
 import { useEntities } from './hooks/useEntities';
+import { useCampaigns } from './hooks/useCampaigns';
 import { createEntity } from './utils/storage';
 import EntityList from './components/EntityList';
 import EntityDetail from './components/EntityDetail';
 import EntityForm from './components/EntityForm';
 import MapEditor from './components/MapEditor';
+import CampaignSelector from './components/CampaignSelector';
 import { Entity, EntityType } from './types';
 import './App.css';
 
 type View = 'entities' | 'map';
 
 function App() {
-  const { entities, addEntity, updateEntity, deleteEntity } = useEntities();
+  const { 
+    campaigns, 
+    activeCampaign, 
+    activeCampaignId,
+    addCampaign, 
+    deleteCampaign, 
+    setActiveCampaign 
+  } = useCampaigns();
+  const { entities, addEntity, updateEntity, deleteEntity } = useEntities(activeCampaignId);
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentView, setCurrentView] = useState<View>('entities');
@@ -44,20 +54,29 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>🎲 JDR Prep - Roleplay Session Planner</h1>
-        <nav className="view-switcher">
-          <button
-            className={currentView === 'entities' ? 'active' : ''}
-            onClick={() => setCurrentView('entities')}
-          >
-            Entities
-          </button>
-          <button
-            className={currentView === 'map' ? 'active' : ''}
-            onClick={() => setCurrentView('map')}
-          >
-            Map
-          </button>
-        </nav>
+        <div className="header-controls">
+          <CampaignSelector
+            campaigns={campaigns}
+            activeCampaign={activeCampaign}
+            onSelectCampaign={setActiveCampaign}
+            onAddCampaign={addCampaign}
+            onDeleteCampaign={deleteCampaign}
+          />
+          <nav className="view-switcher">
+            <button
+              className={currentView === 'entities' ? 'active' : ''}
+              onClick={() => setCurrentView('entities')}
+            >
+              Entities
+            </button>
+            <button
+              className={currentView === 'map' ? 'active' : ''}
+              onClick={() => setCurrentView('map')}
+            >
+              Map
+            </button>
+          </nav>
+        </div>
       </header>
 
       <main className="app-main">
@@ -110,6 +129,7 @@ function App() {
         ) : (
           <MapEditor
             entities={entities}
+            campaignId={activeCampaignId}
             onUpdatePosition={(id, position) => handleUpdateEntity(id, { position })}
           />
         )}

@@ -6,10 +6,11 @@ import DrawingTools from './DrawingTools';
 
 interface MapEditorProps {
   entities: Entity[];
+  campaignId: string | null;
   onUpdatePosition: (id: string, position: { x: number; y: number }) => void;
 }
 
-const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => {
+const MapEditor: React.FC<MapEditorProps> = ({ entities, campaignId, onUpdatePosition }) => {
   const [draggedEntity, setDraggedEntity] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
@@ -21,13 +22,19 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const mapData = loadMapData();
-    setDrawings(mapData.drawings);
-  }, []);
+    if (campaignId) {
+      const mapData = loadMapData(campaignId);
+      setDrawings(mapData.drawings);
+    } else {
+      setDrawings([]);
+    }
+  }, [campaignId]);
 
   useEffect(() => {
-    saveMapData({ drawings });
-  }, [drawings]);
+    if (campaignId) {
+      saveMapData(campaignId, { drawings });
+    }
+  }, [drawings, campaignId]);
 
   const handleMouseDown = (e: React.MouseEvent, entityId: string) => {
     if (isDrawingMode) return;

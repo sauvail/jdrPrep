@@ -34,6 +34,12 @@ body {
   font-weight: 600;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .view-switcher {
   display: flex;
   gap: 0.5rem;
