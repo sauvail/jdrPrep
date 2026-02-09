@@ -1080,3 +1080,181 @@ body {
   background: #f8f9fa;
   font-weight: 600;
 }
+
+/* Inventory Manager */
+.inventory-manager {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.inventory-manager h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.inventory-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.inventory-tabs button {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #7f8c8d;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.inventory-tabs button:hover {
+  color: #2c3e50;
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.inventory-tabs button.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.inventory-content {
+  min-height: 200px;
+}
+
+.inventory-section {
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-inventory {
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.inventory-list {
+  list-style: none;
+  margin-bottom: 1.5rem;
+}
+
+.inventory-item {
+  background: white;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.item-header strong {
+  color: #2c3e50;
+  font-size: 1.05rem;
+}
+
+.item-level {
+  background: #3498db;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-left: auto;
+  margin-right: 0.5rem;
+}
+
+.item-detail {
+  color: #555;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.item-description {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+  line-height: 1.4;
+}
+
+.remove-item-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-item-btn:hover {
+  background: #c0392b;
+}
+
+.inventory-form {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  margin-top: 1rem;
+}
+
+.inventory-form h4 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.inventory-form input,
+.inventory-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.inventory-form textarea {
+  resize: vertical;
+}
+
+.add-item-btn {
+  padding: 0.5rem 1rem;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.add-item-btn:hover {
+  background: #229954;
+}
