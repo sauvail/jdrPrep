@@ -1,20 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEntities } from './hooks/useEntities';
-import { createEntity } from './utils/storage';
+import { createEntity, loadMaps, saveMaps, getActiveMapId, setActiveMapId, createMap, exportData, importData, ExportData } from './utils/storage';
 import EntityList from './components/EntityList';
 import EntityDetail from './components/EntityDetail';
 import EntityForm from './components/EntityForm';
 import MapEditor from './components/MapEditor';
-import { Entity, EntityType } from './types';
+import { Entity, EntityType, Map } from './types';
 import './App.css';
 
 type View = 'entities' | 'map';
 
 function App() {
-  const { entities, addEntity, updateEntity, deleteEntity } = useEntities();
+  const { entities, addEntity, updateEntity, deleteEntity, reloadEntities } = useEntities();
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentView, setCurrentView] = useState<View>('entities');
+  const [maps, setMaps] = useState<Map[]>([]);
+  const [activeMapId, setActiveMapIdState] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadedMaps = loadMaps();
+    setMaps(loadedMaps);
+    
+    const savedActiveMapId = getActiveMapId();
+    if (savedActiveMapId && loadedMaps.find(m => m.id === savedActiveMapId)) {
+      setActiveMapIdState(savedActiveMapId);
+      setActiveMapId(savedActiveMapId);
+    } else if (loadedMaps.length > 0) {
+      setActiveMapIdState(loadedMaps[0].id);
+      setActiveMapId(loadedMaps[0].id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (maps.length > 0) {
+      saveMaps(maps);
+    }
+  }, [maps]);
 
   const handleAddEntity = (type: EntityType, name: string, description: string) => {
     const newEntity = createEntity(type, name, description);
@@ -40,24 +62,94 @@ function App() {
     }
   };
 
+  const handleMapChange = (mapId: string) => {
+    setActiveMapIdState(mapId);
+    setActiveMapId(mapId);
+  };
+
+  const activeMap = maps.find(m => m.id === activeMapId) || null;
+
+  const handleExport = () => {
+    const data = exportData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `jdrprep-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string) as ExportData;
+        const result = importData(data);
+        
+        if (!result.success) {
+          alert(`Import failed: ${result.error}`);
+          return;
+        }
+        
+        reloadEntities();
+        setSelectedEntity(null);
+        // Reload maps after import
+        const loadedMaps = loadMaps();
+        setMaps(loadedMaps);
+        if (loadedMaps.length > 0) {
+          setActiveMapIdState(loadedMaps[0].id);
+          setActiveMapId(loadedMaps[0].id);
+        }
+      } catch (error) {
+        alert('Import failed: Invalid JSON file format. Please check the file and try again.');
+        console.error('Import error:', error);
+      }
+    };
+    reader.readAsText(file);
+    // Reset the input value so the same file can be imported again if needed
+    event.target.value = '';
+  };
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>🎲 JDR Prep - Roleplay Session Planner</h1>
-        <nav className="view-switcher">
-          <button
-            className={currentView === 'entities' ? 'active' : ''}
-            onClick={() => setCurrentView('entities')}
-          >
-            Entities
-          </button>
-          <button
-            className={currentView === 'map' ? 'active' : ''}
-            onClick={() => setCurrentView('map')}
-          >
-            Map
-          </button>
-        </nav>
+        <div className="header-actions">
+          <nav className="view-switcher">
+            <button
+              className={currentView === 'entities' ? 'active' : ''}
+              onClick={() => setCurrentView('entities')}
+            >
+              Entities
+            </button>
+            <button
+              className={currentView === 'map' ? 'active' : ''}
+              onClick={() => setCurrentView('map')}
+            >
+              Map
+            </button>
+          </nav>
+          <div className="data-actions">
+            <button className="export-btn" onClick={handleExport}>
+              📤 Export
+            </button>
+            <label className="import-btn">
+              📥 Import
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
+        </div>
       </header>
 
       <main className="app-main">
@@ -110,7 +202,24 @@ function App() {
         ) : (
           <MapEditor
             entities={entities}
-            onUpdatePosition={(id, position) => handleUpdateEntity(id, { position })}
+            maps={maps}
+            activeMap={activeMap}
+            onUpdateMap={(updatedMap) => {
+              setMaps(maps.map(m => m.id === updatedMap.id ? updatedMap : m));
+            }}
+            onCreateMap={(name) => {
+              const newMap = createMap(name);
+              setMaps([...maps, newMap]);
+              handleMapChange(newMap.id);
+            }}
+            onDeleteMap={(mapId) => {
+              const filteredMaps = maps.filter(m => m.id !== mapId);
+              setMaps(filteredMaps);
+              if (activeMapId === mapId && filteredMaps.length > 0) {
+                handleMapChange(filteredMaps[0].id);
+              }
+            }}
+            onMapChange={handleMapChange}
           />
         )}
       </main>
