@@ -24,7 +24,7 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
   const handleAddConnection = () => {
     if (selectedTarget && connectionType) {
       const newConnection = {
-        id: `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `conn_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
         targetId: selectedTarget,
         type: connectionType,
         description: connectionDesc,

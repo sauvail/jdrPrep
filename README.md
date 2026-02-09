@@ -28,7 +28,7 @@ A web application to help you prepare and organize your roleplay sessions (D&D, 
 
 ### Prerequisites
 
-- Node.js (version 14 or higher)
+- Node.js (version 20.19 or higher)
 - npm
 
 ### Installation

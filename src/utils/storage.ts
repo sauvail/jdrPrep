@@ -13,7 +13,7 @@ export const saveEntities = (entities: Entity[]): void => {
 
 export const createEntity = (type: EntityType, name: string, description: string): Entity => {
   return {
-    id: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    id: `${type}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
     type,
     name,
     description,
@@ -25,7 +25,7 @@ export const createEntity = (type: EntityType, name: string, description: string
 
 export const addConnection = (entity: Entity, targetId: string, type: string, description?: string): Entity => {
   const connection = {
-    id: `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    id: `conn_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
     targetId,
     type,
     description,
