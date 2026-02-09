@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useEntities } from './hooks/useEntities';
 import { useCampaigns } from './hooks/useCampaigns';
-import { createEntity } from './utils/storage';
+import { createEntity, exportData, importData, ExportData } from './utils/storage';
 import EntityList from './components/EntityList';
 import EntityDetail from './components/EntityDetail';
 import EntityForm from './components/EntityForm';
@@ -21,7 +21,7 @@ function App() {
     deleteCampaign, 
     setActiveCampaign 
   } = useCampaigns();
-  const { entities, addEntity, updateEntity, deleteEntity } = useEntities(activeCampaignId);
+  const { entities, addEntity, updateEntity, deleteEntity, reloadEntities } = useEntities(activeCampaignId);
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentView, setCurrentView] = useState<View>('entities');
@@ -50,6 +50,51 @@ function App() {
     }
   };
 
+  const handleExport = () => {
+    if (!activeCampaignId) return;
+    const data = exportData(activeCampaignId);
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const campaignName = activeCampaign?.name.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'campaign';
+    a.download = `jdrprep-${campaignName}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!activeCampaignId) return;
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string) as ExportData;
+        const result = importData(activeCampaignId, data);
+        
+        if (!result.success) {
+          alert(`Import failed: ${result.error}`);
+          return;
+        }
+        
+        reloadEntities();
+        setSelectedEntity(null);
+        // Reload the page to refresh all components including MapEditor
+        window.location.reload();
+      } catch (error) {
+        alert('Import failed: Invalid JSON file format. Please check the file and try again.');
+        console.error('Import error:', error);
+      }
+    };
+    reader.readAsText(file);
+    // Reset the input value so the same file can be imported again if needed
+    event.target.value = '';
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -76,6 +121,20 @@ function App() {
               Map
             </button>
           </nav>
+          <div className="data-actions">
+            <button className="export-btn" onClick={handleExport}>
+              📤 Export
+            </button>
+            <label className="import-btn">
+              📥 Import
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
         </div>
       </header>
 

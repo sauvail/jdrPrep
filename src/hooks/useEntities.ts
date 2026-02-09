@@ -36,10 +36,17 @@ export const useEntities = (campaignId: string | null) => {
     saveEntities(campaignId, updated);
   };
 
+  const reloadEntities = () => {
+    if (campaignId) {
+      setEntities(loadEntities(campaignId));
+    }
+  };
+
   return {
     entities,
     addEntity,
     updateEntity,
     deleteEntity,
+    reloadEntities,
   };
 };

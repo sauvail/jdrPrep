@@ -3,6 +3,9 @@ import { Entity } from '../types';
 import { exportEntityToPDF } from '../utils/pdfExport';
 import { generateId } from '../utils/idGenerator';
 import EncounterBuilder from './EncounterBuilder';
+import MarkdownEditor from './MarkdownEditor';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 interface EntityDetailProps {
   entity: Entity;
@@ -53,6 +56,16 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
     return target ? target.name : 'Unknown';
   };
 
+  const getMarkdownHTML = () => {
+    if (!entity.description) return '';
+    try {
+      const rawHTML = marked.parse(entity.description) as string;
+      return DOMPurify.sanitize(rawHTML);
+    } catch (error) {
+      return entity.description;
+    }
+  };
+
   return (
     <div className="entity-detail">
       {isEditing ? (
@@ -63,11 +76,10 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
             onChange={(e) => setName(e.target.value)}
             className="entity-name-input"
           />
-          <textarea
+          <MarkdownEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={setDescription}
             rows={6}
-            className="entity-description-input"
           />
           <div className="detail-actions">
             <button onClick={handleUpdate}>Save</button>
@@ -78,7 +90,10 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
         <div>
           <h2>{entity.name}</h2>
           <p className="entity-type-badge">{entity.type}</p>
-          <p className="entity-description">{entity.description}</p>
+          <div 
+            className="entity-description markdown-content"
+            dangerouslySetInnerHTML={{ __html: getMarkdownHTML() }}
+          />
           <div className="detail-actions">
             <button onClick={() => setIsEditing(true)}>Edit</button>
             <button 
