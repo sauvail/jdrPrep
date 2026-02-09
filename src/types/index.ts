@@ -102,9 +102,7 @@ export interface Entity {
 
 export interface MapData {
   drawings: DrawingStroke[];
-<<<<<<< HEAD
   images: MapImage[];
-=======
   entityPositions: Record<string, Position>; // entityId -> position mapping
   showGrid?: boolean;
 }
@@ -115,5 +113,4 @@ export interface Map {
   data: MapData;
   createdAt: number;
   updatedAt: number;
->>>>>>> b670daf34730cdb1093020bb79d3f1c09bfad523
 }

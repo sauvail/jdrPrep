@@ -14,11 +14,6 @@ export const saveEntities = (entities: Entity[]): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entities));
 };
 
-<<<<<<< HEAD
-export const loadMapData = (): MapData => {
-  const stored = localStorage.getItem(MAP_STORAGE_KEY);
-  return stored ? JSON.parse(stored) : { drawings: [], images: [] };
-=======
 // Multiple Maps Support
 export const loadMaps = (): Map[] => {
   const stored = localStorage.getItem(MAPS_STORAGE_KEY);
@@ -31,12 +26,12 @@ export const loadMaps = (): Map[] => {
     const parsed = JSON.parse(oldMapData);
     const defaultMap = createMap('Default Map');
     defaultMap.data.drawings = parsed.drawings || [];
+    defaultMap.data.images = parsed.images || [];
     defaultMap.data.showGrid = parsed.showGrid || false;
     return [defaultMap];
   }
   // Create default map
   return [createMap('Default Map')];
->>>>>>> b670daf34730cdb1093020bb79d3f1c09bfad523
 };
 
 export const saveMaps = (maps: Map[]): void => {
@@ -57,6 +52,7 @@ export const createMap = (name: string): Map => {
     name,
     data: {
       drawings: [],
+      images: [],
       entityPositions: {},
       showGrid: false,
     },
