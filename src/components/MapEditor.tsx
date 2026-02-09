@@ -71,8 +71,11 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
       ));
     } else if (draggedImage && mapRef.current) {
       const rect = mapRef.current.getBoundingClientRect();
-      const x = Math.max(0, Math.min(rect.width - 100, e.clientX - rect.left - dragOffset.x));
-      const y = Math.max(0, Math.min(rect.height - 100, e.clientY - rect.top - dragOffset.y));
+      const draggedImg = images.find(img => img.id === draggedImage);
+      const imgWidth = draggedImg?.width || 100;
+      const imgHeight = draggedImg?.height || 100;
+      const x = Math.max(0, Math.min(rect.width - imgWidth, e.clientX - rect.left - dragOffset.x));
+      const y = Math.max(0, Math.min(rect.height - imgHeight, e.clientY - rect.top - dragOffset.y));
       
       setImages(images.map(img => 
         img.id === draggedImage
@@ -124,12 +127,27 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
       const dataUrl = event.target?.result as string;
       const img = new Image();
       img.onload = () => {
+        // Calculate dimensions maintaining aspect ratio, max 300px on longest side
+        let width = img.width;
+        let height = img.height;
+        const maxSize = 300;
+        
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = (maxSize / width) * height;
+            width = maxSize;
+          } else {
+            width = (maxSize / height) * width;
+            height = maxSize;
+          }
+        }
+        
         const newImage: MapImage = {
           id: generateId('image'),
           dataUrl,
           position: { x: 50, y: 50 },
-          width: Math.min(img.width, 300),
-          height: Math.min(img.height, 300) * (img.height / img.width),
+          width,
+          height,
         };
         setImages([...images, newImage]);
       };
