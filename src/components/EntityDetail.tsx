@@ -5,6 +5,7 @@ import { generateId } from '../utils/idGenerator';
 import EncounterBuilder from './EncounterBuilder';
 import MarkdownEditor from './MarkdownEditor';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 interface EntityDetailProps {
   entity: Entity;
@@ -58,7 +59,8 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
   const getMarkdownHTML = () => {
     if (!entity.description) return '';
     try {
-      return marked.parse(entity.description) as string;
+      const rawHTML = marked.parse(entity.description) as string;
+      return DOMPurify.sanitize(rawHTML);
     } catch (error) {
       return entity.description;
     }

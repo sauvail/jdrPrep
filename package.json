@@ -28,7 +28,9 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "@types/dompurify": "^3.0.5",
     "@types/marked": "^5.0.2",
+    "dompurify": "^3.3.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.1.0",
     "marked": "^17.0.1",

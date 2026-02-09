@@ -1,5 +1,6 @@
 import React from 'react';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 interface MarkdownEditorProps {
   value: string;
@@ -18,7 +19,8 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   const getMarkdownPreview = () => {
     if (!value) return '<p class="markdown-placeholder">Preview will appear here...</p>';
     try {
-      return marked.parse(value) as string;
+      const rawHTML = marked.parse(value) as string;
+      return DOMPurify.sanitize(rawHTML);
     } catch (error) {
       return '<p class="markdown-error">Error parsing markdown</p>';
     }
