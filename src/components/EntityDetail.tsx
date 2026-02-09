@@ -3,6 +3,10 @@ import { Entity } from '../types';
 import { exportEntityToPDF } from '../utils/pdfExport';
 import { generateId } from '../utils/idGenerator';
 import EncounterBuilder from './EncounterBuilder';
+import MarkdownEditor from './MarkdownEditor';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+import InventoryManager from './InventoryManager';
 
 interface EntityDetailProps {
   entity: Entity;
@@ -82,6 +86,16 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
     return target ? target.name : 'Unknown';
   };
 
+  const getMarkdownHTML = () => {
+    if (!entity.description) return '';
+    try {
+      const rawHTML = marked.parse(entity.description) as string;
+      return DOMPurify.sanitize(rawHTML);
+    } catch (error) {
+      return entity.description;
+    }
+  };
+
   return (
     <div className="entity-detail">
       {isEditing ? (
@@ -92,11 +106,10 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
             onChange={(e) => setName(e.target.value)}
             className="entity-name-input"
           />
-          <textarea
+          <MarkdownEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={setDescription}
             rows={6}
-            className="entity-description-input"
           />
           <div className="form-group">
             <label>Tags:</label>
@@ -137,7 +150,10 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
               ))}
             </div>
           )}
-          <p className="entity-description">{entity.description}</p>
+          <div 
+            className="entity-description markdown-content"
+            dangerouslySetInnerHTML={{ __html: getMarkdownHTML() }}
+          />
           <div className="detail-actions">
             <button onClick={() => setIsEditing(true)}>Edit</button>
             <button 
@@ -155,6 +171,16 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
         <EncounterBuilder
           encounterData={entity.encounterData || { creatures: [], partyLevel: 1, partySize: 4 }}
           onUpdate={(encounterData) => onUpdate(entity.id, { encounterData })}
+        />
+      )}
+
+      {(entity.type === 'character' || entity.type === 'creature') && (
+        <InventoryManager
+          spells={entity.spells || []}
+          weapons={entity.weapons || []}
+          armors={entity.armors || []}
+          pets={entity.pets || []}
+          onUpdate={(updates) => onUpdate(entity.id, updates)}
         />
       )}
 

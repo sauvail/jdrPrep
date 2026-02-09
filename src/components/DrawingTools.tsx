@@ -4,20 +4,24 @@ interface DrawingToolsProps {
   selectedColor: string;
   selectedThickness: number;
   isDrawing: boolean;
+  showGrid: boolean;
   onColorChange: (color: string) => void;
   onThicknessChange: (thickness: number) => void;
   onToggleDrawing: () => void;
   onClearDrawings: () => void;
+  onToggleGrid: () => void;
 }
 
 const DrawingTools: React.FC<DrawingToolsProps> = ({
   selectedColor,
   selectedThickness,
   isDrawing,
+  showGrid,
   onColorChange,
   onThicknessChange,
   onToggleDrawing,
   onClearDrawings,
+  onToggleGrid,
 }) => {
   const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFFFFF'];
 
@@ -30,6 +34,15 @@ const DrawingTools: React.FC<DrawingToolsProps> = ({
         aria-label={isDrawing ? "Turn off drawing mode" : "Turn on drawing mode"}
       >
         ✏️ {isDrawing ? 'Drawing Mode ON' : 'Drawing Mode OFF'}
+      </button>
+
+      <button
+        className={`tool-btn ${showGrid ? 'active' : ''}`}
+        onClick={onToggleGrid}
+        title="Toggle grid"
+        aria-label={showGrid ? "Hide grid" : "Show grid"}
+      >
+        📐 {showGrid ? 'Grid ON' : 'Grid OFF'}
       </button>
 
       {isDrawing && (

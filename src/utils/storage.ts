@@ -65,3 +65,56 @@ export const updateEntityPosition = (entity: Entity, position: { x: number; y: n
     updatedAt: Date.now(),
   };
 };
+
+// Export/Import functionality
+export interface ExportData {
+  entities: Entity[];
+  mapData: MapData;
+  exportedAt: number;
+  version: string;
+}
+
+export const exportData = (): ExportData => {
+  return {
+    entities: loadEntities(),
+    mapData: loadMapData(),
+    exportedAt: Date.now(),
+    version: '1.0',
+  };
+};
+
+export const importData = (data: ExportData): { success: boolean; error?: string } => {
+  try {
+    // Validate data structure
+    if (!data || typeof data !== 'object') {
+      return { success: false, error: 'Invalid data format: expected an object' };
+    }
+
+    // Check version compatibility
+    if (data.version && data.version !== '1.0') {
+      return { success: false, error: `Incompatible version: ${data.version}. Expected version 1.0` };
+    }
+
+    // Validate entities array
+    if (data.entities && !Array.isArray(data.entities)) {
+      return { success: false, error: 'Invalid entities format: expected an array' };
+    }
+
+    // Validate mapData
+    if (data.mapData && (!data.mapData.drawings || !Array.isArray(data.mapData.drawings))) {
+      return { success: false, error: 'Invalid map data format' };
+    }
+
+    // Import the data
+    if (data.entities) {
+      saveEntities(data.entities);
+    }
+    if (data.mapData) {
+      saveMapData(data.mapData);
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: `Import failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
+  }
+};

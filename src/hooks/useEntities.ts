@@ -29,10 +29,15 @@ export const useEntities = () => {
     saveEntities(updated);
   };
 
+  const reloadEntities = () => {
+    setEntities(loadEntities());
+  };
+
   return {
     entities,
     addEntity,
     updateEntity,
     deleteEntity,
+    reloadEntities,
   };
 };
