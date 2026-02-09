@@ -227,7 +227,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({
                   type="number"
                   placeholder="Spell level"
                   value={spellLevel}
-                  onChange={(e) => setSpellLevel(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setSpellLevel(e.target.value === '' ? 0 : parseInt(e.target.value, 10))}
                 />
                 <input
                   type="text"
@@ -387,7 +387,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({
                   type="number"
                   placeholder="Armor Class (AC)"
                   value={armorAC}
-                  onChange={(e) => setArmorAC(parseInt(e.target.value) || 10)}
+                  onChange={(e) => setArmorAC(e.target.value === '' ? 10 : parseInt(e.target.value, 10))}
                 />
                 <input
                   type="text"
@@ -464,7 +464,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({
                   type="number"
                   placeholder="Level"
                   value={petLevel}
-                  onChange={(e) => setPetLevel(parseInt(e.target.value) || 1)}
+                  onChange={(e) => setPetLevel(e.target.value === '' ? 1 : parseInt(e.target.value, 10))}
                 />
                 <textarea
                   placeholder="Description"
