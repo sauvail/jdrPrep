@@ -10,6 +10,9 @@ interface MapEditorProps {
 }
 
 const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => {
+  const MAX_IMPORTED_IMAGE_SIZE = 300;
+  const MIN_IMAGE_SIZE = 50;
+  
   const [draggedEntity, setDraggedEntity] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
@@ -61,8 +64,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
       const deltaX = currentX - resizeStart.x;
       const deltaY = currentY - resizeStart.y;
       
-      const newWidth = Math.max(50, resizeStart.width + deltaX);
-      const newHeight = Math.max(50, resizeStart.height + deltaY);
+      const newWidth = Math.max(MIN_IMAGE_SIZE, resizeStart.width + deltaX);
+      const newHeight = Math.max(MIN_IMAGE_SIZE, resizeStart.height + deltaY);
       
       setImages(images.map(img => 
         img.id === resizingImage
@@ -127,18 +130,17 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
       const dataUrl = event.target?.result as string;
       const img = new Image();
       img.onload = () => {
-        // Calculate dimensions maintaining aspect ratio, max 300px on longest side
+        // Calculate dimensions maintaining aspect ratio, max size on longest side
         let width = img.width;
         let height = img.height;
-        const maxSize = 300;
         
-        if (width > maxSize || height > maxSize) {
+        if (width > MAX_IMPORTED_IMAGE_SIZE || height > MAX_IMPORTED_IMAGE_SIZE) {
           if (width > height) {
-            height = (maxSize / width) * height;
-            width = maxSize;
+            height = (MAX_IMPORTED_IMAGE_SIZE / width) * height;
+            width = MAX_IMPORTED_IMAGE_SIZE;
           } else {
-            width = (maxSize / height) * width;
-            height = maxSize;
+            width = (MAX_IMPORTED_IMAGE_SIZE / height) * width;
+            height = MAX_IMPORTED_IMAGE_SIZE;
           }
         }
         
