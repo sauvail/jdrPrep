@@ -25,18 +25,33 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
   const [draggedImage, setDraggedImage] = useState<string | null>(null);
   const [resizingImage, setResizingImage] = useState<string | null>(null);
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; imageId: string } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const mapData = loadMapData();
     setDrawings(mapData.drawings);
-    setImages(mapData.images);
+    // Ensure all images have a zIndex property (for migration)
+    const migratedImages = mapData.images.map((img, index) => ({
+      ...img,
+      zIndex: img.zIndex !== undefined ? img.zIndex : index
+    }));
+    setImages(migratedImages);
   }, []);
 
   useEffect(() => {
     saveMapData({ drawings, images });
   }, [drawings, images]);
+
+  // Close context menu on click outside
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    if (contextMenu) {
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
+  }, [contextMenu]);
 
   const handleMouseDown = (e: React.MouseEvent, entityId: string) => {
     if (isDrawingMode) return;
@@ -150,6 +165,7 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
           position: { x: 50, y: 50 },
           width,
           height,
+          zIndex: images.length > 0 ? Math.max(...images.map(img => img.zIndex)) + 1 : 0,
         };
         setImages([...images, newImage]);
       };
@@ -196,6 +212,28 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
 
   const handleDeleteImage = (imageId: string) => {
     setImages(images.filter(img => img.id !== imageId));
+  };
+
+  const handleImageContextMenu = (e: React.MouseEvent, imageId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, imageId });
+  };
+
+  const bringToFront = (imageId: string) => {
+    const maxZIndex = Math.max(...images.map(img => img.zIndex));
+    setImages(images.map(img => 
+      img.id === imageId ? { ...img, zIndex: maxZIndex + 1 } : img
+    ));
+    setContextMenu(null);
+  };
+
+  const sendToBack = (imageId: string) => {
+    const minZIndex = Math.min(...images.map(img => img.zIndex));
+    setImages(images.map(img => 
+      img.id === imageId ? { ...img, zIndex: minZIndex - 1 } : img
+    ));
+    setContextMenu(null);
   };
 
   const getConnectionPath = (entity: Entity, targetEntity: Entity) => {
@@ -298,7 +336,10 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
         </svg>
 
         {/* Imported Images */}
-        {images.map(image => (
+        {images
+          .slice()
+          .sort((a, b) => a.zIndex - b.zIndex)
+          .map(image => (
           <div
             key={image.id}
             className="map-image"
@@ -307,10 +348,12 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
               top: `${image.position.y}px`,
               width: `${image.width}px`,
               height: `${image.height}px`,
+              zIndex: image.zIndex,
               cursor: isDrawingMode ? 'crosshair' : (draggedImage === image.id ? 'grabbing' : 'grab'),
               pointerEvents: isDrawingMode ? 'none' : 'auto',
             }}
             onMouseDown={(e) => handleImageMouseDown(e, image.id)}
+            onContextMenu={(e) => handleImageContextMenu(e, image.id)}
           >
             <img
               src={image.dataUrl}
@@ -377,6 +420,26 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
           </div>
         )}
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          className="context-menu"
+          style={{
+            position: 'fixed',
+            top: `${contextMenu.y}px`,
+            left: `${contextMenu.x}px`,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button onClick={() => bringToFront(contextMenu.imageId)}>
+            Bring to Front
+          </button>
+          <button onClick={() => sendToBack(contextMenu.imageId)}>
+            Send to Back
+          </button>
+        </div>
+      )}
     </div>
   );
 };

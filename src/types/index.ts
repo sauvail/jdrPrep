@@ -25,6 +25,7 @@ export interface MapImage {
   position: Position;
   width: number;
   height: number;
+  zIndex: number;
 }
 
 export type CreatureRole = 'caster' | 'fighter' | 'tank' | 'ranged' | 'support' | 'skirmisher';
