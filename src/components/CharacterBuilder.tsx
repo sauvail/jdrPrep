@@ -364,7 +364,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ characterData, onUp
           <div className="scores-grid">
             {Object.entries(localData.abilityScores).map(([ability, value]) => (
               <div key={ability} className="ability-score">
-                <label>{ability.charAt(0).toUpperCase() + ability.slice(1).substring(0, 3)}:</label>
+                <label>{ability.charAt(0).toUpperCase() + ability.slice(1, 4)}:</label>
                 <input
                   type="number"
                   min="3"
