@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Entity } from '../types';
+import { exportEntityToPDF } from '../utils/pdfExport';
+import EncounterBuilder from './EncounterBuilder';
 
 interface EntityDetailProps {
   entity: Entity;
@@ -76,8 +78,20 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
           <h2>{entity.name}</h2>
           <p className="entity-type-badge">{entity.type}</p>
           <p className="entity-description">{entity.description}</p>
-          <button onClick={() => setIsEditing(true)}>Edit</button>
+          <div className="detail-actions">
+            <button onClick={() => setIsEditing(true)}>Edit</button>
+            <button onClick={() => exportEntityToPDF(entity)} className="export-btn">
+              📄 Export to PDF
+            </button>
+          </div>
         </div>
+      )}
+
+      {entity.type === 'encounter' && (
+        <EncounterBuilder
+          encounterData={entity.encounterData || { creatures: [], partyLevel: 1, partySize: 4 }}
+          onUpdate={(encounterData) => onUpdate(entity.id, { encounterData })}
+        />
       )}
 
       <div className="connections-section">

@@ -508,6 +508,10 @@ body {
   background: #95a5a6;
 }
 
+.map-entity.encounter .entity-icon {
+  background: #16a085;
+}
+
 .entity-label {
   font-size: 0.85rem;
   font-weight: 500;
@@ -520,6 +524,284 @@ body {
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Drawing Tools */
+.drawing-tools {
+  background: white;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tool-btn {
+  padding: 0.5rem 1rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s;
+}
+
+.tool-btn:hover {
+  background: #2980b9;
+}
+
+.tool-btn.active {
+  background: #27ae60;
+}
+
+.tool-btn.active:hover {
+  background: #229954;
+}
+
+.clear-btn {
+  background: #e74c3c;
+}
+
+.clear-btn:hover {
+  background: #c0392b;
+}
+
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-picker label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.color-swatches {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.color-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  border: 2px solid transparent;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.selected {
+  border-color: #3498db;
+  transform: scale(1.15);
+}
+
+.thickness-slider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.thickness-slider label {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.thickness-slider input[type="range"] {
+  width: 120px;
+}
+
+/* Encounter Builder */
+.encounter-builder {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.encounter-builder h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.party-config {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.config-field label {
+  font-weight: 500;
+  color: #34495e;
+  font-size: 0.9rem;
+}
+
+.config-field input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100px;
+}
+
+.difficulty-indicator {
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.difficulty-indicator.trivial {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.difficulty-indicator.low {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.difficulty-indicator.moderate {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.difficulty-indicator.severe {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.difficulty-indicator.extreme {
+  background: #f5c6cb;
+  color: #721c24;
+  border: 2px solid #c0392b;
+}
+
+.creatures-section h4 {
+  color: #2c3e50;
+  margin-bottom: 0.75rem;
+}
+
+.no-creatures {
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}
+
+.creatures-list {
+  list-style: none;
+  margin-bottom: 1rem;
+}
+
+.creature-item {
+  background: white;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.creature-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.creature-meta {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.remove-creature-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.remove-creature-btn:hover {
+  background: #c0392b;
+}
+
+.statblock {
+  background: #f8f9fa;
+  padding: 0.75rem;
+  border-left: 3px solid #3498db;
+  margin-top: 0.5rem;
+  font-family: monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  color: #2c3e50;
+}
+
+.add-creature-form {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  margin-top: 1rem;
+}
+
+.add-creature-form input,
+.add-creature-form select {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.add-creature-btn {
+  padding: 0.5rem 1rem;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.add-creature-btn:hover {
+  background: #229954;
+}
+
+.export-btn {
+  background: #9b59b6;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.export-btn:hover {
+  background: #8e44ad;
 }
 
 .map-controls {

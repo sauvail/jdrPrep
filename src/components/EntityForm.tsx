@@ -35,6 +35,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ onSubmit, onCancel }) => {
           <option value="organization">Organization</option>
           <option value="creature">Creature</option>
           <option value="quest">Quest</option>
+          <option value="encounter">Encounter</option>
           <option value="general">General</option>
         </select>
       </div>

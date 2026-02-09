@@ -1,5 +1,7 @@
-import React, { useState, useRef } from 'react';
-import { Entity } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { Entity, DrawingStroke, Position } from '../types';
+import { loadMapData, saveMapData } from '../utils/storage';
+import DrawingTools from './DrawingTools';
 
 interface MapEditorProps {
   entities: Entity[];
@@ -9,9 +11,26 @@ interface MapEditorProps {
 const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => {
   const [draggedEntity, setDraggedEntity] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [currentStroke, setCurrentStroke] = useState<Position[]>([]);
+  const [drawings, setDrawings] = useState<DrawingStroke[]>([]);
+  const [selectedColor, setSelectedColor] = useState('#000000');
+  const [selectedThickness, setSelectedThickness] = useState(4);
   const mapRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const mapData = loadMapData();
+    setDrawings(mapData.drawings);
+  }, []);
+
+  useEffect(() => {
+    saveMapData({ drawings });
+  }, [drawings]);
+
   const handleMouseDown = (e: React.MouseEvent, entityId: string) => {
+    if (isDrawingMode) return;
+    
     const entity = entities.find(e => e.id === entityId);
     if (entity && entity.position && mapRef.current) {
       const rect = mapRef.current.getBoundingClientRect();
@@ -23,7 +42,12 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (draggedEntity && mapRef.current) {
+    if (isDrawingMode && isDrawing && mapRef.current) {
+      const rect = mapRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setCurrentStroke([...currentStroke, { x, y }]);
+    } else if (draggedEntity && mapRef.current) {
       const rect = mapRef.current.getBoundingClientRect();
       const x = Math.max(0, Math.min(rect.width - 80, e.clientX - rect.left - dragOffset.x));
       const y = Math.max(0, Math.min(rect.height - 60, e.clientY - rect.top - dragOffset.y));
@@ -32,12 +56,28 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
   };
 
   const handleMouseUp = () => {
-    setDraggedEntity(null);
+    if (isDrawingMode && isDrawing && currentStroke.length > 0) {
+      const newStroke: DrawingStroke = {
+        id: `stroke_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+        points: currentStroke,
+        color: selectedColor,
+        thickness: selectedThickness,
+      };
+      setDrawings([...drawings, newStroke]);
+      setCurrentStroke([]);
+      setIsDrawing(false);
+    } else {
+      setDraggedEntity(null);
+    }
   };
 
-  const handleMapClick = (e: React.MouseEvent) => {
-    if (e.target === mapRef.current) {
-      // Could add functionality to place new entities on the map
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    if (isDrawingMode && e.target === mapRef.current) {
+      setIsDrawing(true);
+      const rect = mapRef.current!.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setCurrentStroke([{ x, y }]);
     }
   };
 
@@ -52,20 +92,64 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
     return `M ${x1} ${y1} L ${x2} ${y2}`;
   };
 
+  const getStrokePath = (points: Position[]): string => {
+    if (points.length === 0) return '';
+    const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+    return path;
+  };
+
   const entitiesOnMap = entities.filter(e => e.position);
 
   return (
     <div className="map-editor">
       <h2>Map View</h2>
+      
+      <DrawingTools
+        selectedColor={selectedColor}
+        selectedThickness={selectedThickness}
+        isDrawing={isDrawingMode}
+        onColorChange={setSelectedColor}
+        onThicknessChange={setSelectedThickness}
+        onToggleDrawing={() => setIsDrawingMode(!isDrawingMode)}
+        onClearDrawings={() => setDrawings([])}
+      />
+
       <div
         ref={mapRef}
         className="map-canvas"
+        onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onClick={handleMapClick}
+        style={{ cursor: isDrawingMode ? 'crosshair' : 'default' }}
       >
         <svg className="connection-layer">
+          {/* Drawings */}
+          {drawings.map((stroke) => (
+            <path
+              key={stroke.id}
+              d={getStrokePath(stroke.points)}
+              stroke={stroke.color}
+              strokeWidth={stroke.thickness}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+          
+          {/* Current stroke being drawn */}
+          {currentStroke.length > 0 && (
+            <path
+              d={getStrokePath(currentStroke)}
+              stroke={selectedColor}
+              strokeWidth={selectedThickness}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+
+          {/* Entity connections */}
           {entitiesOnMap.map(entity =>
             entity.connections.map(conn => {
               const target = entities.find(e => e.id === conn.targetId);
@@ -94,7 +178,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
             style={{
               left: `${entity.position!.x}px`,
               top: `${entity.position!.y}px`,
-              cursor: draggedEntity === entity.id ? 'grabbing' : 'grab',
+              cursor: isDrawingMode ? 'crosshair' : (draggedEntity === entity.id ? 'grabbing' : 'grab'),
+              pointerEvents: isDrawingMode ? 'none' : 'auto',
             }}
             onMouseDown={(e) => handleMouseDown(e, entity.id)}
           >
@@ -105,8 +190,8 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
       </div>
 
       <div className="map-controls">
-        <p>Drag entities onto the map to position them. Connections will be shown automatically.</p>
-        {entities.filter(e => !e.position).length > 0 && (
+        <p>{isDrawingMode ? 'Click and drag to draw on the map' : 'Drag entities onto the map to position them. Connections will be shown automatically.'}</p>
+        {entities.filter(e => !e.position).length > 0 && !isDrawingMode && (
           <div className="unmapped-entities">
             <h4>Entities not on map:</h4>
             <ul>
