@@ -38,6 +38,26 @@ function App() {
     }
   }, [maps]);
 
+  useEffect(() => {
+    const loadedMaps = loadMaps();
+    setMaps(loadedMaps);
+    
+    const savedActiveMapId = getActiveMapId();
+    if (savedActiveMapId && loadedMaps.find(m => m.id === savedActiveMapId)) {
+      setActiveMapIdState(savedActiveMapId);
+      setActiveMapId(savedActiveMapId);
+    } else if (loadedMaps.length > 0) {
+      setActiveMapIdState(loadedMaps[0].id);
+      setActiveMapId(loadedMaps[0].id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (maps.length > 0) {
+      saveMaps(maps);
+    }
+  }, [maps]);
+
   const handleAddEntity = (type: EntityType, name: string, description: string, tags: string[]) => {
     const newEntity = createEntity(type, name, description, tags);
     addEntity(newEntity);
