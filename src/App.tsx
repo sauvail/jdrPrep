@@ -25,6 +25,7 @@ function App() {
     const savedActiveMapId = getActiveMapId();
     if (savedActiveMapId && loadedMaps.find(m => m.id === savedActiveMapId)) {
       setActiveMapIdState(savedActiveMapId);
+      setActiveMapId(savedActiveMapId);
     } else if (loadedMaps.length > 0) {
       setActiveMapIdState(loadedMaps[0].id);
       setActiveMapId(loadedMaps[0].id);
