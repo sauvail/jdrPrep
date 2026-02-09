@@ -18,16 +18,20 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
   const [drawings, setDrawings] = useState<DrawingStroke[]>([]);
   const [selectedColor, setSelectedColor] = useState('#000000');
   const [selectedThickness, setSelectedThickness] = useState(4);
+  const [showGrid, setShowGrid] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
+
+  const GRID_SIZE = 60; // Size to match the character icon (60px)
 
   useEffect(() => {
     const mapData = loadMapData();
     setDrawings(mapData.drawings);
+    setShowGrid(mapData.showGrid || false);
   }, []);
 
   useEffect(() => {
-    saveMapData({ drawings });
-  }, [drawings]);
+    saveMapData({ drawings, showGrid });
+  }, [drawings, showGrid]);
 
   const handleMouseDown = (e: React.MouseEvent, entityId: string) => {
     if (isDrawingMode) return;
@@ -99,6 +103,48 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
     return path;
   };
 
+  const renderGrid = () => {
+    if (!showGrid || !mapRef.current) return null;
+    
+    const rect = mapRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    
+    const lines = [];
+    
+    // Vertical lines
+    for (let x = 0; x <= width; x += GRID_SIZE) {
+      lines.push(
+        <line
+          key={`v-${x}`}
+          x1={x}
+          y1={0}
+          x2={x}
+          y2={height}
+          stroke="#ddd"
+          strokeWidth="1"
+        />
+      );
+    }
+    
+    // Horizontal lines
+    for (let y = 0; y <= height; y += GRID_SIZE) {
+      lines.push(
+        <line
+          key={`h-${y}`}
+          x1={0}
+          y1={y}
+          x2={width}
+          y2={y}
+          stroke="#ddd"
+          strokeWidth="1"
+        />
+      );
+    }
+    
+    return <g className="grid-layer">{lines}</g>;
+  };
+
   const entitiesOnMap = entities.filter(e => e.position);
 
   return (
@@ -109,10 +155,12 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
         selectedColor={selectedColor}
         selectedThickness={selectedThickness}
         isDrawing={isDrawingMode}
+        showGrid={showGrid}
         onColorChange={setSelectedColor}
         onThicknessChange={setSelectedThickness}
         onToggleDrawing={() => setIsDrawingMode(!isDrawingMode)}
         onClearDrawings={() => setDrawings([])}
+        onToggleGrid={() => setShowGrid(!showGrid)}
       />
 
       <div
@@ -125,6 +173,9 @@ const MapEditor: React.FC<MapEditorProps> = ({ entities, onUpdatePosition }) => 
         style={{ cursor: isDrawingMode ? 'crosshair' : 'default' }}
       >
         <svg className="connection-layer">
+          {/* Grid */}
+          {renderGrid()}
+          
           {/* Drawings */}
           {drawings.map((stroke) => (
             <path
