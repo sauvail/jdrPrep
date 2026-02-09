@@ -3,6 +3,7 @@ import { Entity } from '../types';
 import { exportEntityToPDF } from '../utils/pdfExport';
 import { generateId } from '../utils/idGenerator';
 import EncounterBuilder from './EncounterBuilder';
+import InventoryManager from './InventoryManager';
 
 interface EntityDetailProps {
   entity: Entity;
@@ -96,6 +97,16 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
         <EncounterBuilder
           encounterData={entity.encounterData || { creatures: [], partyLevel: 1, partySize: 4 }}
           onUpdate={(encounterData) => onUpdate(entity.id, { encounterData })}
+        />
+      )}
+
+      {(entity.type === 'character' || entity.type === 'creature') && (
+        <InventoryManager
+          spells={entity.spells || []}
+          weapons={entity.weapons || []}
+          armors={entity.armors || []}
+          pets={entity.pets || []}
+          onUpdate={(updates) => onUpdate(entity.id, updates)}
         />
       )}
 
