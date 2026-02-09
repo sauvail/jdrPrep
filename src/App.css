@@ -836,3 +836,75 @@ body {
 .unmapped-entities li:hover {
   background: #e9ecef;
 }
+
+/* Map Images */
+.map-image {
+  position: absolute;
+  user-select: none;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.map-image:hover {
+  border-color: #3498db;
+}
+
+.delete-image-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.map-image:hover .delete-image-btn {
+  opacity: 1;
+}
+
+.delete-image-btn:hover {
+  background: #c0392b;
+}
+
+.resize-handle {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  background: #3498db;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.map-image:hover .resize-handle {
+  opacity: 1;
+}
+
+.resize-handle:hover {
+  background: #2980b9;
+}
+
+.import-image-btn {
+  background: #9b59b6;
+}
+
+.import-image-btn:hover {
+  background: #8e44ad;
+}

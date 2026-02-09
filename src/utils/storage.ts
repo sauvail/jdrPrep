@@ -15,7 +15,7 @@ export const saveEntities = (entities: Entity[]): void => {
 
 export const loadMapData = (): MapData => {
   const stored = localStorage.getItem(MAP_STORAGE_KEY);
-  return stored ? JSON.parse(stored) : { drawings: [] };
+  return stored ? JSON.parse(stored) : { drawings: [], images: [] };
 };
 
 export const saveMapData = (mapData: MapData): void => {

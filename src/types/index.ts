@@ -19,6 +19,14 @@ export interface DrawingStroke {
   thickness: number;
 }
 
+export interface MapImage {
+  id: string;
+  dataUrl: string;
+  position: Position;
+  width: number;
+  height: number;
+}
+
 export type CreatureRole = 'caster' | 'fighter' | 'tank' | 'ranged' | 'support' | 'skirmisher';
 
 export interface EncounterCreature {
@@ -52,4 +60,5 @@ export interface Entity {
 
 export interface MapData {
   drawings: DrawingStroke[];
+  images: MapImage[];
 }
