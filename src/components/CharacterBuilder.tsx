@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CharacterData, CharacterClass, CharacterRace, AbilityScores, Spell, Attack } from '../types';
+import { CharacterData, CharacterClass, CharacterRace, AbilityScores, CharacterSpell, Attack } from '../types';
 import { generateId } from '../utils/idGenerator';
 
 interface CharacterBuilderProps {
@@ -217,7 +217,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ characterData, onUp
 
   const handleAddSpell = () => {
     if (newSpell.name.trim()) {
-      const spell: Spell = {
+      const spell: CharacterSpell = {
         id: generateId('spell'),
         ...newSpell,
         saveDC: 0, // Will be calculated

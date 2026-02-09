@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Entity } from '../types';
 import { exportEntityToPDF } from '../utils/pdfExport';
 import { generateId } from '../utils/idGenerator';
 import EncounterBuilder from './EncounterBuilder';
+import MarkdownEditor from './MarkdownEditor';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+import InventoryManager from './InventoryManager';
 import CharacterBuilder from './CharacterBuilder';
 
 interface EntityDetailProps {
@@ -15,14 +19,43 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(entity.name);
   const [description, setDescription] = useState(entity.description);
+  const [tags, setTags] = useState<string[]>(entity.tags || []);
+  const [tagInput, setTagInput] = useState('');
   const [showConnectionForm, setShowConnectionForm] = useState(false);
   const [selectedTarget, setSelectedTarget] = useState('');
   const [connectionType, setConnectionType] = useState('');
   const [connectionDesc, setConnectionDesc] = useState('');
 
-  const handleUpdate = () => {
-    onUpdate(entity.id, { name, description });
+  // Sync local state when entity changes
+  useEffect(() => {
+    setName(entity.name);
+    setDescription(entity.description);
+    setTags(entity.tags || []);
     setIsEditing(false);
+  }, [entity]);
+
+  const handleUpdate = () => {
+    onUpdate(entity.id, { name, description, tags });
+    setIsEditing(false);
+  };
+
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag]);
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleTagKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
   };
 
   const handleAddConnection = () => {
@@ -54,6 +87,16 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
     return target ? target.name : 'Unknown';
   };
 
+  const getMarkdownHTML = () => {
+    if (!entity.description) return '';
+    try {
+      const rawHTML = marked.parse(entity.description) as string;
+      return DOMPurify.sanitize(rawHTML);
+    } catch (error) {
+      return entity.description;
+    }
+  };
+
   return (
     <div className="entity-detail">
       {isEditing ? (
@@ -64,12 +107,34 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
             onChange={(e) => setName(e.target.value)}
             className="entity-name-input"
           />
-          <textarea
+          <MarkdownEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={setDescription}
             rows={6}
-            className="entity-description-input"
           />
+          <div className="form-group">
+            <label>Tags:</label>
+            <div className="tags-input-container">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyPress={handleTagKeyPress}
+                placeholder="Add tags (press Enter)..."
+              />
+              <button type="button" onClick={handleAddTag}>Add Tag</button>
+            </div>
+            {tags.length > 0 && (
+              <div className="tags-list">
+                {tags.map(tag => (
+                  <span key={tag} className="tag">
+                    {tag}
+                    <button type="button" onClick={() => handleRemoveTag(tag)}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="detail-actions">
             <button onClick={handleUpdate}>Save</button>
             <button onClick={() => setIsEditing(false)}>Cancel</button>
@@ -79,7 +144,17 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
         <div>
           <h2>{entity.name}</h2>
           <p className="entity-type-badge">{entity.type}</p>
-          <p className="entity-description">{entity.description}</p>
+          {entity.tags && entity.tags.length > 0 && (
+            <div className="entity-tags">
+              {entity.tags.map(tag => (
+                <span key={tag} className="tag">{tag}</span>
+              ))}
+            </div>
+          )}
+          <div 
+            className="entity-description markdown-content"
+            dangerouslySetInnerHTML={{ __html: getMarkdownHTML() }}
+          />
           <div className="detail-actions">
             <button onClick={() => setIsEditing(true)}>Edit</button>
             <button 
@@ -97,6 +172,16 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
         <EncounterBuilder
           encounterData={entity.encounterData || { creatures: [], partyLevel: 1, partySize: 4 }}
           onUpdate={(encounterData) => onUpdate(entity.id, { encounterData })}
+        />
+      )}
+
+      {(entity.type === 'character' || entity.type === 'creature') && (
+        <InventoryManager
+          spells={entity.spells || []}
+          weapons={entity.weapons || []}
+          armors={entity.armors || []}
+          pets={entity.pets || []}
+          onUpdate={(updates) => onUpdate(entity.id, updates)}
         />
       )}
 
