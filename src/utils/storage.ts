@@ -69,13 +69,45 @@ export const updateMap = (map: Map, updates: Partial<Map>): Map => {
   };
 };
 
-export const createEntity = (type: EntityType, name: string, description: string): Entity => {
+export const getActiveMapId = (): string | null => {
+  return localStorage.getItem(ACTIVE_MAP_KEY);
+};
+
+export const setActiveMapId = (mapId: string): void => {
+  localStorage.setItem(ACTIVE_MAP_KEY, mapId);
+};
+
+export const createMap = (name: string): Map => {
+  return {
+    id: generateId('map'),
+    name,
+    data: {
+      drawings: [],
+      images: [],
+      entityPositions: {},
+      showGrid: false,
+    },
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+};
+
+export const updateMap = (map: Map, updates: Partial<Map>): Map => {
+  return {
+    ...map,
+    ...updates,
+    updatedAt: Date.now(),
+  };
+};
+
+export const createEntity = (type: EntityType, name: string, description: string, tags: string[] = []): Entity => {
   return {
     id: generateId(type),
     type,
     name,
     description,
     connections: [],
+    tags,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -162,6 +194,8 @@ export const importData = (data: ExportData): { success: boolean; error?: string
       const defaultMap = createMap('Imported Map');
       defaultMap.data.drawings = oldMapData.drawings || [];
       defaultMap.data.showGrid = oldMapData.showGrid || false;
+      defaultMap.data.images = oldMapData.images || [];
+      defaultMap.data.entityPositions = oldMapData.entityPositions || {};
       saveMaps([defaultMap]);
     } else {
       // No map data - create a default empty map

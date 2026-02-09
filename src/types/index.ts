@@ -94,6 +94,7 @@ export interface Entity {
   createdAt: number;
   updatedAt: number;
   encounterData?: EncounterData;
+  tags?: string[];
   spells?: Spell[];
   weapons?: Weapon[];
   armors?: Armor[];
