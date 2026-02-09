@@ -34,6 +34,12 @@ body {
   font-weight: 600;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
 .view-switcher {
   display: flex;
   gap: 0.5rem;
@@ -56,6 +62,37 @@ body {
 .view-switcher button.active {
   background: #3498db;
   border-color: #3498db;
+}
+
+.data-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.export-btn,
+.import-btn {
+  padding: 0.5rem 1rem;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-size: 0.9rem;
+}
+
+.export-btn:hover,
+.import-btn:hover {
+  background: #229954;
+}
+
+.import-btn {
+  background: #3498db;
+  cursor: pointer;
+}
+
+.import-btn:hover {
+  background: #2980b9;
 }
 
 .app-main {

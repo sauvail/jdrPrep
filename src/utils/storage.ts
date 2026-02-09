@@ -64,3 +64,29 @@ export const updateEntityPosition = (entity: Entity, position: { x: number; y: n
     updatedAt: Date.now(),
   };
 };
+
+// Export/Import functionality
+export interface ExportData {
+  entities: Entity[];
+  mapData: MapData;
+  exportedAt: number;
+  version: string;
+}
+
+export const exportData = (): ExportData => {
+  return {
+    entities: loadEntities(),
+    mapData: loadMapData(),
+    exportedAt: Date.now(),
+    version: '1.0',
+  };
+};
+
+export const importData = (data: ExportData): void => {
+  if (data.entities) {
+    saveEntities(data.entities);
+  }
+  if (data.mapData) {
+    saveMapData(data.mapData);
+  }
+};

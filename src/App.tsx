@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useEntities } from './hooks/useEntities';
-import { createEntity } from './utils/storage';
+import { createEntity, exportData, importData, ExportData } from './utils/storage';
 import EntityList from './components/EntityList';
 import EntityDetail from './components/EntityDetail';
 import EntityForm from './components/EntityForm';
@@ -11,7 +11,7 @@ import './App.css';
 type View = 'entities' | 'map';
 
 function App() {
-  const { entities, addEntity, updateEntity, deleteEntity } = useEntities();
+  const { entities, addEntity, updateEntity, deleteEntity, reloadEntities } = useEntities();
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentView, setCurrentView] = useState<View>('entities');
@@ -40,24 +40,74 @@ function App() {
     }
   };
 
+  const handleExport = () => {
+    const data = exportData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `jdrprep-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string) as ExportData;
+        importData(data);
+        reloadEntities();
+        setSelectedEntity(null);
+        // Reload the page to refresh all components including MapEditor
+        window.location.reload();
+      } catch (error) {
+        alert('Error importing data. Please check the file format.');
+        console.error('Import error:', error);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>🎲 JDR Prep - Roleplay Session Planner</h1>
-        <nav className="view-switcher">
-          <button
-            className={currentView === 'entities' ? 'active' : ''}
-            onClick={() => setCurrentView('entities')}
-          >
-            Entities
-          </button>
-          <button
-            className={currentView === 'map' ? 'active' : ''}
-            onClick={() => setCurrentView('map')}
-          >
-            Map
-          </button>
-        </nav>
+        <div className="header-actions">
+          <nav className="view-switcher">
+            <button
+              className={currentView === 'entities' ? 'active' : ''}
+              onClick={() => setCurrentView('entities')}
+            >
+              Entities
+            </button>
+            <button
+              className={currentView === 'map' ? 'active' : ''}
+              onClick={() => setCurrentView('map')}
+            >
+              Map
+            </button>
+          </nav>
+          <div className="data-actions">
+            <button className="export-btn" onClick={handleExport}>
+              📤 Export
+            </button>
+            <label className="import-btn">
+              📥 Import
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
+        </div>
       </header>
 
       <main className="app-main">
