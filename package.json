@@ -22,7 +22,7 @@
   "bugs": {
     "url": "https://github.com/sauvail/jdrPrep/issues"
   },
-  "homepage": "https://github.com/sauvail/jdrPrep#readme",
+  "homepage": "https://sauvail.github.io/jdrPrep/",
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
