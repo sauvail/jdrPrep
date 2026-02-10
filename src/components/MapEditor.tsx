@@ -761,6 +761,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         })}
         </div>
       </div>
+        </div>
 
       <div className="map-controls">
         <p>{isPanning ? 'Use middle mouse button to pan the map' : isDrawingMode ? 'Click and drag to draw on the map' : 'Drag entities onto the map to position them. Connections will be shown automatically. Use middle mouse button to pan.'}</p>
@@ -810,8 +811,6 @@ const MapEditor: React.FC<MapEditorProps> = ({
           </div>
         )}
       </div>
-
-        </div>
 
         {/* Entity Detail Panel */}
         {selectedEntity && (
