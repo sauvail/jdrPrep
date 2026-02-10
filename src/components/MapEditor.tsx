@@ -473,10 +473,10 @@ const MapEditor: React.FC<MapEditorProps> = ({
   });
 
   useEffect(() => {
-    if (activeMap && editingMapName) {
+    if (activeMap) {
       setEditedMapName(activeMap.name);
     }
-  }, [editingMapName, activeMap]);
+  }, [activeMap]);
 
   if (!activeMap) {
     return (
@@ -509,7 +509,10 @@ const MapEditor: React.FC<MapEditorProps> = ({
           ) : (
             <>
               <h2>{activeMap.name}</h2>
-              <button className="rename-map-btn" onClick={() => setEditingMapName(true)}>
+              <button className="rename-map-btn" onClick={() => {
+                setEditedMapName(activeMap.name);
+                setEditingMapName(true);
+              }}>
                 ✏️ Rename
               </button>
             </>
