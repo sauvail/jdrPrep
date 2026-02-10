@@ -709,7 +709,7 @@ body {
   border: 2px solid var(--border-color);
   border-radius: 8px;
   position: relative;
-  overflow: auto;
+  overflow: visible;
   margin-bottom: 0.5rem;
   min-height: 500px;
 }
@@ -1301,6 +1301,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow-y: auto;
 }
 
 /* Map Entity Detail Panel */
