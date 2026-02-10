@@ -57,6 +57,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [entityFilter, setEntityFilter] = useState('');
   const mapRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -430,6 +431,16 @@ const MapEditor: React.FC<MapEditorProps> = ({
     }
   };
 
+  // Filter entities based on search text
+  const filteredEntities = entities.filter(entity => {
+    if (!entityFilter.trim()) return true;
+    const searchText = entityFilter.toLowerCase();
+    return (
+      entity.name.toLowerCase().includes(searchText) ||
+      entity.type.toLowerCase().includes(searchText)
+    );
+  });
+
   useEffect(() => {
     if (activeMap && editingMapName) {
       setEditedMapName(activeMap.name);
@@ -717,20 +728,42 @@ const MapEditor: React.FC<MapEditorProps> = ({
 
       <div className="map-controls">
         <p>{isPanning ? 'Use middle mouse button to pan the map' : isDrawingMode ? 'Click and drag to draw on the map' : 'Drag entities onto the map to position them. Connections will be shown automatically. Use middle mouse button to pan.'}</p>
-        {entities.filter(e => !entityPositions[e.id]).length > 0 && !isDrawingMode && (
-          <div className="unmapped-entities">
-            <h4>Entities not on map:</h4>
-            <ul>
-              {entities.filter(e => !entityPositions[e.id]).map(e => (
-                <li
-                  key={e.id}
-                  onClick={() => handleAddEntityToMap(e.id)}
-                  style={{ cursor: 'pointer' }}
+        {!isDrawingMode && (
+          <div className="entity-list-section">
+            <h4>Add Entities to Map</h4>
+            <div className="entity-filter-container">
+              <input
+                type="text"
+                className="entity-filter-input"
+                placeholder="Search entities by name or type..."
+                value={entityFilter}
+                onChange={(e) => setEntityFilter(e.target.value)}
+              />
+              {entityFilter && (
+                <button
+                  className="clear-filter-btn"
+                  onClick={() => setEntityFilter('')}
+                  title="Clear filter"
                 >
-                  {e.name} ({e.type}) - Click to add to map
-                </li>
-              ))}
-            </ul>
+                  ×
+                </button>
+              )}
+            </div>
+            {filteredEntities.length > 0 ? (
+              <ul className="entity-list">
+                {filteredEntities.map(e => (
+                  <li
+                    key={`${e.id}-${Math.random()}`}
+                    onClick={() => handleAddEntityToMap(e.id)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {e.name} ({e.type}) - Click to add to map
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="no-entities-message">No entities match your search.</p>
+            )}
           </div>
         )}
       </div>
