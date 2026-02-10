@@ -536,4 +536,31 @@ describe('MapEditor Entity Filter', () => {
       expect(mapControls).toContainElement(entityList);
     });
   });
+
+  describe('Layout Structure', () => {
+    it('renders map-controls before map-canvas-section in DOM order', () => {
+      const { container } = render(<MapEditor {...defaultProps} />);
+
+      const mapContentWrapper = container.querySelector('.map-content-wrapper');
+      const children = mapContentWrapper?.children;
+
+      expect(children).toBeDefined();
+      expect(children?.[0]).toHaveClass('map-controls');
+      expect(children?.[1]).toHaveClass('map-canvas-section');
+    });
+
+    it('entity list appears above the map canvas', () => {
+      const { container } = render(<MapEditor {...defaultProps} />);
+
+      const mapControls = container.querySelector('.map-controls');
+      const mapCanvasSection = container.querySelector('.map-canvas-section');
+
+      expect(mapControls).toBeInTheDocument();
+      expect(mapCanvasSection).toBeInTheDocument();
+
+      // Check that entity controls come before canvas in DOM
+      const allElements = Array.from(container.querySelectorAll('.map-controls, .map-canvas-section'));
+      expect(allElements.indexOf(mapControls!)).toBeLessThan(allElements.indexOf(mapCanvasSection!));
+    });
+  });
 });

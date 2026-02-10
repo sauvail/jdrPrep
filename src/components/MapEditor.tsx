@@ -550,6 +550,56 @@ const MapEditor: React.FC<MapEditorProps> = ({
       </div>
 
       <div className="map-content-wrapper">
+        {/* Entity List Section - Now above the map */}
+        <div className="map-controls">
+          <p>{isPanning ? 'Use middle mouse button to pan the map' : isDrawingMode ? 'Click and drag to draw on the map' : 'Drag entities onto the map to position them. Connections will be shown automatically. Use middle mouse button to pan.'}</p>
+          {!isDrawingMode && (
+            <div className="entity-list-section">
+              <h4>Add Entities to Map</h4>
+              <div className="entity-filter-container">
+                <input
+                  type="text"
+                  className="entity-filter-input"
+                  placeholder="Search entities by name or type..."
+                  value={entityFilter}
+                  onChange={(e) => setEntityFilter(e.target.value)}
+                />
+                {entityFilter && (
+                  <button
+                    className="clear-filter-btn"
+                    onClick={() => setEntityFilter('')}
+                    title="Clear filter"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              {filteredEntities.length > 0 ? (
+                <ul className="entity-list">
+                  {filteredEntities.map(e => {
+                    const isOnMap = !!entityPositions[e.id];
+                    return (
+                      <li
+                        key={e.id}
+                        onClick={() => handleAddEntityToMap(e.id)}
+                        style={{
+                          cursor: isOnMap ? 'default' : 'pointer',
+                          opacity: isOnMap ? 0.5 : 1,
+                        }}
+                        title={isOnMap ? 'Already on map' : 'Click to add to map'}
+                      >
+                        {e.name} ({e.type}) - {isOnMap ? 'Already on map' : 'Click to add to map'}
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="no-entities-message">No entities match your search.</p>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="map-canvas-section">
           <input
             ref={fileInputRef}
@@ -762,55 +812,6 @@ const MapEditor: React.FC<MapEditorProps> = ({
         </div>
       </div>
         </div>
-
-      <div className="map-controls">
-        <p>{isPanning ? 'Use middle mouse button to pan the map' : isDrawingMode ? 'Click and drag to draw on the map' : 'Drag entities onto the map to position them. Connections will be shown automatically. Use middle mouse button to pan.'}</p>
-        {!isDrawingMode && (
-          <div className="entity-list-section">
-            <h4>Add Entities to Map</h4>
-            <div className="entity-filter-container">
-              <input
-                type="text"
-                className="entity-filter-input"
-                placeholder="Search entities by name or type..."
-                value={entityFilter}
-                onChange={(e) => setEntityFilter(e.target.value)}
-              />
-              {entityFilter && (
-                <button
-                  className="clear-filter-btn"
-                  onClick={() => setEntityFilter('')}
-                  title="Clear filter"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-            {filteredEntities.length > 0 ? (
-              <ul className="entity-list">
-                {filteredEntities.map(e => {
-                  const isOnMap = !!entityPositions[e.id];
-                  return (
-                    <li
-                      key={e.id}
-                      onClick={() => handleAddEntityToMap(e.id)}
-                      style={{
-                        cursor: isOnMap ? 'default' : 'pointer',
-                        opacity: isOnMap ? 0.5 : 1,
-                      }}
-                      title={isOnMap ? 'Already on map' : 'Click to add to map'}
-                    >
-                      {e.name} ({e.type}) - {isOnMap ? 'Already on map' : 'Click to add to map'}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="no-entities-message">No entities match your search.</p>
-            )}
-          </div>
-        )}
-      </div>
 
         {/* Entity Detail Panel */}
         {selectedEntity && (
