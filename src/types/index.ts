@@ -149,6 +149,8 @@ export interface MapData {
   images: MapImage[];
   entityPositions: Record<string, Position>; // entityId -> position mapping
   showGrid?: boolean;
+  gridWidth?: number; // Number of cells horizontally (default 20)
+  gridHeight?: number; // Number of cells vertically (default 15)
 }
 
 export interface Map {
