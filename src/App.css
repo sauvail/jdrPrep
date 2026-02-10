@@ -146,7 +146,7 @@ body {
 
 .app-main {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .entities-view {
@@ -709,7 +709,7 @@ body {
   border: 2px solid var(--border-color);
   border-radius: 8px;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
   margin-bottom: 0.5rem;
   min-height: 500px;
 }
@@ -1293,7 +1293,7 @@ body {
   display: flex;
   gap: 1rem;
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .map-canvas-section {
