@@ -196,6 +196,7 @@ function App() {
                 <EntityForm
                   onSubmit={handleAddEntity}
                   onCancel={() => setShowForm(false)}
+                  entities={entities}
                 />
               )}
               <EntityList
