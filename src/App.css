@@ -4,6 +4,38 @@
   box-sizing: border-box;
 }
 
+/* Light theme (default) */
+:root {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: white;
+  --bg-tertiary: #f8f9fa;
+  --bg-header: #2c3e50;
+  --text-primary: #2c3e50;
+  --text-secondary: #34495e;
+  --text-muted: #7f8c8d;
+  --border-color: #ddd;
+  --border-light: #eee;
+  --shadow: rgba(0,0,0,0.1);
+  --accent-primary: #3498db;
+  --accent-hover: #2980b9;
+}
+
+/* Dark theme */
+.dark-theme {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3a3a3a;
+  --bg-header: #1a1a1a;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888888;
+  --border-color: #444444;
+  --border-light: #383838;
+  --shadow: rgba(0,0,0,0.3);
+  --accent-primary: #4aa3df;
+  --accent-hover: #3498db;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -16,17 +48,17 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f5f5f5;
+  background: var(--bg-primary);
 }
 
 .app-header {
-  background: #2c3e50;
+  background: var(--bg-header);
   color: white;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px var(--shadow);
 }
 
 .app-header h1 {
@@ -69,6 +101,21 @@ body {
   gap: 0.5rem;
 }
 
+.theme-toggle-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: white;
+  border: 2px solid #34495e;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+}
+
+.theme-toggle-btn:hover {
+  background: #34495e;
+}
+
 .export-btn,
 .import-btn {
   padding: 0.5rem 1rem;
@@ -107,8 +154,8 @@ body {
 
 .sidebar {
   width: 300px;
-  background: white;
-  border-right: 1px solid #ddd;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -116,7 +163,7 @@ body {
 
 .sidebar-header {
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .add-entity-btn {
@@ -144,12 +191,12 @@ body {
 /* Entity Form */
 .entity-form {
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .entity-form h3 {
   margin-bottom: 1rem;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 .form-group {
@@ -160,7 +207,7 @@ body {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #34495e;
+  color: var(--text-secondary);
 }
 
 .form-group input,
@@ -168,9 +215,11 @@ body {
 .form-group textarea {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .form-group textarea {
@@ -218,7 +267,7 @@ body {
 
 .entity-list h2 {
   margin-bottom: 1rem;
-  color: #2c3e50;
+  color: var(--text-primary);
   font-size: 1.2rem;
 }
 
@@ -228,7 +277,7 @@ body {
 
 .entity-group h3 {
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: var(--text-muted);
   text-transform: uppercase;
   margin-bottom: 0.5rem;
 }
@@ -240,7 +289,7 @@ body {
 .entity-group li {
   padding: 0.75rem;
   margin-bottom: 0.25rem;
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -250,11 +299,11 @@ body {
 }
 
 .entity-group li:hover {
-  background: #e9ecef;
+  background: var(--border-light);
 }
 
 .entity-group li.selected {
-  background: #3498db;
+  background: var(--accent-primary);
   color: white;
 }
 
@@ -287,7 +336,7 @@ body {
 }
 
 .entity-detail h2 {
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
@@ -312,19 +361,23 @@ body {
   padding: 0.5rem;
   font-size: 1.5rem;
   font-weight: bold;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   margin-bottom: 1rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .entity-description-input {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   margin-bottom: 1rem;
   font-family: inherit;
   resize: vertical;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .detail-actions {
@@ -375,11 +428,11 @@ body {
 .connections-section {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-light);
 }
 
 .connections-section h3 {
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 1rem;
 }
 
@@ -391,7 +444,7 @@ body {
 .connections-list li {
   padding: 0.75rem;
   margin-bottom: 0.5rem;
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
   border-radius: 4px;
   display: flex;
   justify-content: space-between;
@@ -416,7 +469,7 @@ body {
 
 .connection-form {
   padding: 1rem;
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
   border-radius: 4px;
   margin-top: 1rem;
 }
@@ -426,8 +479,10 @@ body {
   width: 100%;
   padding: 0.5rem;
   margin-bottom: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .connections-section > button {
@@ -447,11 +502,11 @@ body {
 .empty-state {
   text-align: center;
   padding: 3rem;
-  color: #7f8c8d;
+  color: var(--text-muted);
 }
 
 .empty-state h2 {
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 1rem;
 }
 
@@ -480,9 +535,9 @@ body {
   align-items: center;
   margin-bottom: 1rem;
   padding: 1rem;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
 }
 
 .map-title-section {
@@ -493,7 +548,7 @@ body {
 
 .map-title-section h2 {
   margin: 0;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 .rename-map-btn {
@@ -518,10 +573,12 @@ body {
 
 .map-rename-form input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1rem;
   width: 200px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .map-rename-form button {
@@ -558,15 +615,17 @@ body {
 
 .map-selector label {
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 .map-selector select {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9rem;
   cursor: pointer;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .map-selector button {
@@ -604,9 +663,11 @@ body {
 
 .new-map-form input {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .new-map-form button {
@@ -636,14 +697,14 @@ body {
 }
 
 .map-editor h2 {
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 1rem;
 }
 
 .map-canvas {
   flex: 1;
-  background: white;
-  border: 2px solid #ddd;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   position: relative;
   overflow: hidden;
@@ -713,11 +774,11 @@ body {
 .entity-label {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #2c3e50;
-  background: white;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px var(--shadow);
   white-space: nowrap;
   max-width: 120px;
   overflow: hidden;
@@ -726,11 +787,11 @@ body {
 
 /* Drawing Tools */
 .drawing-tools {
-  background: white;
+  background: var(--bg-secondary);
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -739,11 +800,11 @@ body {
 
 /* Zoom Controls */
 .zoom-controls {
-  background: white;
+  background: var(--bg-secondary);
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -772,18 +833,18 @@ body {
 
 .zoom-controls span {
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--text-primary);
   min-width: 50px;
   text-align: center;
 }
 
 /* Grid Size Controls */
 .grid-size-controls {
-  background: white;
+  background: var(--bg-secondary);
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;
@@ -793,20 +854,22 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #2c3e50;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .grid-size-controls input[type="number"] {
   width: 80px;
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .map-canvas-content {
-  background: white;
+  background: var(--bg-secondary);
 }
 
 

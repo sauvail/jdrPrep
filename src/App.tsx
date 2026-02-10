@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useEntities } from './hooks/useEntities';
 import { useCampaigns } from './hooks/useCampaigns';
-import { createEntity, loadMaps, saveMaps, getActiveMapId, setActiveMapId, createMap, exportData, importData, ExportData } from './utils/storage';
+import { createEntity, loadMaps, saveMaps, getActiveMapId, setActiveMapId, createMap, exportData, importData, ExportData, loadTheme, saveTheme, Theme } from './utils/storage';
 import EntityList from './components/EntityList';
 import EntityDetail from './components/EntityDetail';
 import EntityForm from './components/EntityForm';
@@ -27,6 +27,22 @@ function App() {
   const [currentView, setCurrentView] = useState<View>('entities');
   const [maps, setMaps] = useState<Map[]>([]);
   const [activeMapId, setActiveMapIdState] = useState<string | null>(null);
+  const [theme, setTheme] = useState<Theme>(() => loadTheme());
+
+  // Apply theme on mount and when it changes
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark-theme');
+    } else {
+      document.documentElement.classList.remove('dark-theme');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const newTheme: Theme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    saveTheme(newTheme);
+  };
 
   // Load maps when campaign changes
   useEffect(() => {
@@ -164,6 +180,9 @@ function App() {
             </button>
           </nav>
           <div className="data-actions">
+            <button className="theme-toggle-btn" onClick={toggleTheme}>
+              {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+            </button>
             <button className="export-btn" onClick={handleExport}>
               📤 Export
             </button>

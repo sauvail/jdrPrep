@@ -210,3 +210,17 @@ export const importData = (campaignId: string, data: ExportData): { success: boo
     return { success: false, error: `Import failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 };
+
+// Theme management
+const THEME_KEY = 'jdrprep_theme';
+
+export type Theme = 'light' | 'dark';
+
+export const loadTheme = (): Theme => {
+  const stored = localStorage.getItem(THEME_KEY);
+  return (stored === 'dark' || stored === 'light') ? stored : 'light';
+};
+
+export const saveTheme = (theme: Theme): void => {
+  localStorage.setItem(THEME_KEY, theme);
+};
