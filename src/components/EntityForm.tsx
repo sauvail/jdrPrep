@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { EntityType } from '../types';
+import { EntityType, Entity } from '../types';
 import MarkdownEditor from './MarkdownEditor';
 
 interface EntityFormProps {
   onSubmit: (type: EntityType, name: string, description: string, tags: string[]) => void;
   onCancel: () => void;
+  entities?: Entity[];
 }
 
-const EntityForm: React.FC<EntityFormProps> = ({ onSubmit, onCancel }) => {
+const EntityForm: React.FC<EntityFormProps> = ({ onSubmit, onCancel, entities = [] }) => {
   const [type, setType] = useState<EntityType>('character');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -81,6 +82,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ onSubmit, onCancel }) => {
           onChange={setDescription}
           placeholder="Enter description (supports markdown)..."
           rows={4}
+          entities={entities}
         />
       </div>
       <div className="form-group">
