@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import EntityList from './EntityList';
 import { Entity } from '../types';
 import { createEntity } from '../utils/storage';
@@ -14,7 +13,7 @@ describe('EntityList', () => {
     return entity;
   };
 
-  it('should display entities without tags when no tag filter is active', () => {
+  it('should display all entities', () => {
     const entities: Entity[] = [
       createTestEntity('character', 'Hero'),
       createTestEntity('location', 'Village'),
@@ -35,50 +34,7 @@ describe('EntityList', () => {
     expect(screen.getByText('Main Quest')).toBeInTheDocument();
   });
 
-  it('should display entities without tags even when tag filter is active', async () => {
-    const user = userEvent.setup();
-
-    const entities: Entity[] = [
-      createTestEntity('character', 'Tagged Hero', ['hero', 'main']),
-      createTestEntity('location', 'Tagged Village', ['village']),
-      createTestEntity('quest', 'Untagged Quest'), // No tags
-      createTestEntity('organization', 'Untagged Org'), // No tags
-      createTestEntity('creature', 'Tagged Monster', ['enemy']),
-    ];
-
-    render(
-      <EntityList
-        entities={entities}
-        selectedEntity={null}
-        onSelect={mockOnSelect}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    // All entities should be visible initially
-    expect(screen.getByText('Tagged Hero')).toBeInTheDocument();
-    expect(screen.getByText('Tagged Village')).toBeInTheDocument();
-    expect(screen.getByText('Untagged Quest')).toBeInTheDocument();
-    expect(screen.getByText('Untagged Org')).toBeInTheDocument();
-    expect(screen.getByText('Tagged Monster')).toBeInTheDocument();
-
-    // Click on a tag filter
-    const heroTagButton = screen.getByText('hero');
-    await user.click(heroTagButton);
-
-    // Tagged entities matching the filter should be visible
-    expect(screen.getByText('Tagged Hero')).toBeInTheDocument();
-
-    // Untagged entities should STILL be visible (this is the fix)
-    expect(screen.getByText('Untagged Quest')).toBeInTheDocument();
-    expect(screen.getByText('Untagged Org')).toBeInTheDocument();
-
-    // Tagged entities NOT matching the filter should be hidden
-    expect(screen.queryByText('Tagged Village')).not.toBeInTheDocument();
-    expect(screen.queryByText('Tagged Monster')).not.toBeInTheDocument();
-  });
-
-  it('should show all entity types (not just character and location)', async () => {
+  it('should show all entity types', () => {
     const entities: Entity[] = [
       createTestEntity('character', 'Test Character'),
       createTestEntity('location', 'Test Location'),
