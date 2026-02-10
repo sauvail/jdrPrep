@@ -504,7 +504,10 @@ const MapEditor: React.FC<MapEditorProps> = ({
                 autoFocus
               />
               <button onClick={handleRenameMap}>Save</button>
-              <button onClick={() => setEditingMapName(false)}>Cancel</button>
+              <button onClick={() => {
+                setEditedMapName(activeMap.name);
+                setEditingMapName(false);
+              }}>Cancel</button>
             </div>
           ) : (
             <>
