@@ -31,6 +31,11 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const MAX_IMPORTED_IMAGE_SIZE = 300;
   const MIN_IMAGE_SIZE = 50;
   const GRID_SIZE = 69; // Size 15% bigger than character icon (60px × 1.15)
+  const DEFAULT_GRID_WIDTH = 20;
+  const DEFAULT_GRID_HEIGHT = 15;
+  const MIN_ZOOM = 0.25;
+  const MAX_ZOOM = 3;
+  const ZOOM_STEP = 0.25;
 
   const [draggedEntity, setDraggedEntity] = useState<string | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
@@ -48,6 +53,10 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const [resizingImage, setResizingImage] = useState<string | null>(null);
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; imageId: string } | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const mapRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,6 +64,8 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const images = activeMap?.data.images || [];
   const entityPositions = activeMap?.data.entityPositions || {};
   const showGrid = activeMap?.data.showGrid || false;
+  const gridWidth = activeMap?.data.gridWidth || DEFAULT_GRID_WIDTH;
+  const gridHeight = activeMap?.data.gridHeight || DEFAULT_GRID_HEIGHT;
 
   const updateActiveMapData = (updates: Partial<Map['data']>) => {
     if (!activeMap) return;
@@ -67,6 +78,29 @@ const MapEditor: React.FC<MapEditorProps> = ({
     onUpdateMap(updatedMap);
   };
 
+  // Helper function to convert screen coordinates to canvas coordinates
+  const screenToCanvas = (screenX: number, screenY: number): Position => {
+    if (!mapRef.current) return { x: 0, y: 0 };
+    const rect = mapRef.current.getBoundingClientRect();
+    const x = (screenX - rect.left - pan.x) / zoom;
+    const y = (screenY - rect.top - pan.y) / zoom;
+    return { x, y };
+  };
+
+  // Zoom handlers
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(MAX_ZOOM, prev + ZOOM_STEP));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(MIN_ZOOM, prev - ZOOM_STEP));
+  };
+
+  const handleResetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
   // Close context menu on click outside
   useEffect(() => {
     const handleClick = () => setContextMenu(null);
@@ -77,13 +111,13 @@ const MapEditor: React.FC<MapEditorProps> = ({
   }, [contextMenu]);
 
   const handleMouseDown = (e: React.MouseEvent, entityId: string) => {
-    if (isDrawingMode || !activeMap) return;
+    if (isDrawingMode || !activeMap || isPanning) return;
 
     const position = entityPositions[entityId];
     if (position && mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect();
-      const offsetX = e.clientX - rect.left - position.x;
-      const offsetY = e.clientY - rect.top - position.y;
+      const canvasPos = screenToCanvas(e.clientX, e.clientY);
+      const offsetX = canvasPos.x - position.x;
+      const offsetY = canvasPos.y - position.y;
       setDragOffset({ x: offsetX, y: offsetY });
       setDraggedEntity(entityId);
     }
@@ -98,17 +132,18 @@ const MapEditor: React.FC<MapEditorProps> = ({
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDrawingMode && isDrawing && mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      setCurrentStroke([...currentStroke, { x, y }]);
+    if (isPanning && mapRef.current) {
+      const deltaX = e.clientX - panStart.x;
+      const deltaY = e.clientY - panStart.y;
+      setPan({ x: pan.x + deltaX, y: pan.y + deltaY });
+      setPanStart({ x: e.clientX, y: e.clientY });
+    } else if (isDrawingMode && isDrawing && mapRef.current) {
+      const canvasPos = screenToCanvas(e.clientX, e.clientY);
+      setCurrentStroke([...currentStroke, canvasPos]);
     } else if (resizingImage && mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect();
-      const currentX = e.clientX - rect.left;
-      const currentY = e.clientY - rect.top;
-      const deltaX = currentX - resizeStart.x;
-      const deltaY = currentY - resizeStart.y;
+      const canvasPos = screenToCanvas(e.clientX, e.clientY);
+      const deltaX = canvasPos.x - resizeStart.x;
+      const deltaY = canvasPos.y - resizeStart.y;
 
       const newWidth = Math.max(MIN_IMAGE_SIZE, resizeStart.width + deltaX);
       const newHeight = Math.max(MIN_IMAGE_SIZE, resizeStart.height + deltaY);
@@ -121,12 +156,14 @@ const MapEditor: React.FC<MapEditorProps> = ({
         ),
       });
     } else if (draggedImage && mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect();
       const draggedImg = images.find(img => img.id === draggedImage);
       const imgWidth = draggedImg?.width || 100;
       const imgHeight = draggedImg?.height || 100;
-      const x = Math.max(0, Math.min(rect.width - imgWidth, e.clientX - rect.left - dragOffset.x));
-      const y = Math.max(0, Math.min(rect.height - imgHeight, e.clientY - rect.top - dragOffset.y));
+      const canvasPos = screenToCanvas(e.clientX, e.clientY);
+      const canvasWidth = (mapRef.current.getBoundingClientRect().width) / zoom;
+      const canvasHeight = (mapRef.current.getBoundingClientRect().height) / zoom;
+      const x = Math.max(0, Math.min(canvasWidth - imgWidth, canvasPos.x - dragOffset.x));
+      const y = Math.max(0, Math.min(canvasHeight - imgHeight, canvasPos.y - dragOffset.y));
 
       updateActiveMapData({
         images: images.map(img =>
@@ -136,9 +173,11 @@ const MapEditor: React.FC<MapEditorProps> = ({
         ),
       });
     } else if (draggedEntity && mapRef.current && activeMap) {
-      const rect = mapRef.current.getBoundingClientRect();
-      const x = Math.max(0, Math.min(rect.width - 80, e.clientX - rect.left - dragOffset.x));
-      const y = Math.max(0, Math.min(rect.height - 60, e.clientY - rect.top - dragOffset.y));
+      const canvasPos = screenToCanvas(e.clientX, e.clientY);
+      const canvasWidth = (mapRef.current.getBoundingClientRect().width) / zoom;
+      const canvasHeight = (mapRef.current.getBoundingClientRect().height) / zoom;
+      const x = Math.max(0, Math.min(canvasWidth - 80, canvasPos.x - dragOffset.x));
+      const y = Math.max(0, Math.min(canvasHeight - 60, canvasPos.y - dragOffset.y));
 
       updateActiveMapData({
         entityPositions: {
@@ -166,16 +205,23 @@ const MapEditor: React.FC<MapEditorProps> = ({
       setDraggedEntity(null);
       setDraggedImage(null);
       setResizingImage(null);
+      setIsPanning(false);
     }
   };
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    // Middle mouse button for panning
+    if (e.button === 1) {
+      e.preventDefault();
+      setIsPanning(true);
+      setPanStart({ x: e.clientX, y: e.clientY });
+      return;
+    }
+
     if (isDrawingMode && e.target === mapRef.current) {
       setIsDrawing(true);
-      const rect = mapRef.current!.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      setCurrentStroke([{ x, y }]);
+      const canvasPos = screenToCanvas(e.clientX, e.clientY);
+      setCurrentStroke([canvasPos]);
     }
   };
 
@@ -225,29 +271,29 @@ const MapEditor: React.FC<MapEditorProps> = ({
   };
 
   const handleImageMouseDown = (e: React.MouseEvent, imageId: string) => {
-    if (isDrawingMode) return;
+    if (isDrawingMode || isPanning) return;
     e.stopPropagation();
 
     const image = images.find(img => img.id === imageId);
     if (image && mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect();
-      const offsetX = e.clientX - rect.left - image.position.x;
-      const offsetY = e.clientY - rect.top - image.position.y;
+      const canvasPos = screenToCanvas(e.clientX, e.clientY);
+      const offsetX = canvasPos.x - image.position.x;
+      const offsetY = canvasPos.y - image.position.y;
       setDragOffset({ x: offsetX, y: offsetY });
       setDraggedImage(imageId);
     }
   };
 
   const handleResizeMouseDown = (e: React.MouseEvent, imageId: string) => {
-    if (isDrawingMode) return;
+    if (isDrawingMode || isPanning) return;
     e.stopPropagation();
 
     const image = images.find(img => img.id === imageId);
     if (image && mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect();
+      const canvasPos = screenToCanvas(e.clientX, e.clientY);
       setResizeStart({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        x: canvasPos.x,
+        y: canvasPos.y,
         width: image.width,
         height: image.height,
       });
@@ -310,9 +356,8 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const renderGrid = () => {
     if (!showGrid || !mapRef.current) return null;
 
-    const rect = mapRef.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
+    const width = gridWidth * GRID_SIZE;
+    const height = gridHeight * GRID_SIZE;
 
     const lines = [];
 
@@ -485,6 +530,38 @@ const MapEditor: React.FC<MapEditorProps> = ({
         onImportImage={() => fileInputRef.current?.click()}
       />
 
+      {/* Zoom Controls */}
+      <div className="zoom-controls">
+        <button onClick={handleZoomIn} disabled={zoom >= MAX_ZOOM} title="Zoom In">+</button>
+        <span>{Math.round(zoom * 100)}%</span>
+        <button onClick={handleZoomOut} disabled={zoom <= MIN_ZOOM} title="Zoom Out">-</button>
+        <button onClick={handleResetZoom} title="Reset Zoom">Reset</button>
+      </div>
+
+      {/* Grid Size Configuration */}
+      <div className="grid-size-controls">
+        <label>
+          Grid Width (cells):
+          <input
+            type="number"
+            min="5"
+            max="100"
+            value={gridWidth}
+            onChange={(e) => updateActiveMapData({ gridWidth: parseInt(e.target.value) || DEFAULT_GRID_WIDTH })}
+          />
+        </label>
+        <label>
+          Grid Height (cells):
+          <input
+            type="number"
+            min="5"
+            max="100"
+            value={gridHeight}
+            onChange={(e) => updateActiveMapData({ gridHeight: parseInt(e.target.value) || DEFAULT_GRID_HEIGHT })}
+          />
+        </label>
+      </div>
+
       <div
         ref={mapRef}
         className="map-canvas"
@@ -492,9 +569,19 @@ const MapEditor: React.FC<MapEditorProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        style={{ cursor: isDrawingMode ? 'crosshair' : 'default' }}
+        style={{ cursor: isPanning ? 'grabbing' : isDrawingMode ? 'crosshair' : 'default' }}
       >
-        <svg className="connection-layer">
+        <div
+          className="map-canvas-content"
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: '0 0',
+            width: `${gridWidth * GRID_SIZE}px`,
+            height: `${gridHeight * GRID_SIZE}px`,
+            position: 'relative',
+          }}
+        >
+        <svg className="connection-layer" width={gridWidth * GRID_SIZE} height={gridHeight * GRID_SIZE}>
           {/* Grid */}
           {renderGrid()}
 
@@ -615,10 +702,11 @@ const MapEditor: React.FC<MapEditorProps> = ({
             </div>
           );
         })}
+        </div>
       </div>
 
       <div className="map-controls">
-        <p>{isDrawingMode ? 'Click and drag to draw on the map' : 'Drag entities onto the map to position them. Connections will be shown automatically.'}</p>
+        <p>{isPanning ? 'Use middle mouse button to pan the map' : isDrawingMode ? 'Click and drag to draw on the map' : 'Drag entities onto the map to position them. Connections will be shown automatically. Use middle mouse button to pan.'}</p>
         {entities.filter(e => !entityPositions[e.id]).length > 0 && !isDrawingMode && (
           <div className="unmapped-entities">
             <h4>Entities not on map:</h4>
