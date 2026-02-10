@@ -731,7 +731,6 @@ body {
 .entity-icon {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -742,33 +741,59 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+/* Character - Circle (default) */
 .map-entity.character .entity-icon {
   background: #3498db;
+  border-radius: 50%;
 }
 
+/* Location - Just text, no shape */
 .map-entity.location .entity-icon {
-  background: #e74c3c;
+  background: transparent;
+  box-shadow: none;
+  color: #e74c3c;
+  font-size: 1rem;
+  font-weight: 600;
+  width: auto;
+  height: auto;
+  padding: 0.5rem;
 }
 
+/* Organization - Diamond */
 .map-entity.organization .entity-icon {
   background: #9b59b6;
+  transform: rotate(45deg);
 }
 
+.map-entity.organization .entity-icon::before {
+  content: attr(data-letter);
+  transform: rotate(-45deg);
+  display: block;
+}
+
+/* Creature - Hexagon */
 .map-entity.creature .entity-icon {
   background: #e67e22;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
 }
 
+/* Quest - Star */
 .map-entity.quest .entity-icon {
   background: #f1c40f;
   color: #333;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 
+/* General - Square */
 .map-entity.general .entity-icon {
   background: #95a5a6;
+  border-radius: 4px;
 }
 
+/* Encounter - Octagon */
 .map-entity.encounter .entity-icon {
   background: #16a085;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
 }
 
 .entity-label {
