@@ -15,6 +15,7 @@
   --text-muted: #7f8c8d;
   --border-color: #ddd;
   --border-light: #eee;
+  --grid-color: #c0c0c0;
   --shadow: rgba(0,0,0,0.1);
   --accent-primary: #3498db;
   --accent-hover: #2980b9;
@@ -31,6 +32,7 @@
   --text-muted: #888888;
   --border-color: #444444;
   --border-light: #383838;
+  --grid-color: #505050;
   --shadow: rgba(0,0,0,0.3);
   --accent-primary: #4aa3df;
   --accent-hover: #3498db;
