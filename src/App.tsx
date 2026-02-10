@@ -1,62 +1,58 @@
 import { useState, useEffect } from 'react';
 import { useEntities } from './hooks/useEntities';
+import { useCampaigns } from './hooks/useCampaigns';
 import { createEntity, loadMaps, saveMaps, getActiveMapId, setActiveMapId, createMap, exportData, importData, ExportData } from './utils/storage';
 import EntityList from './components/EntityList';
 import EntityDetail from './components/EntityDetail';
 import EntityForm from './components/EntityForm';
 import MapEditor from './components/MapEditor';
+import CampaignSelector from './components/CampaignSelector';
 import { Entity, EntityType, Map } from './types';
 import './App.css';
 
 type View = 'entities' | 'map';
 
 function App() {
-  const { entities, addEntity, updateEntity, deleteEntity, reloadEntities } = useEntities();
+  const {
+    campaigns,
+    activeCampaign,
+    activeCampaignId,
+    addCampaign,
+    deleteCampaign,
+    setActiveCampaign
+  } = useCampaigns();
+  const { entities, addEntity, updateEntity, deleteEntity, reloadEntities } = useEntities(activeCampaignId);
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentView, setCurrentView] = useState<View>('entities');
   const [maps, setMaps] = useState<Map[]>([]);
   const [activeMapId, setActiveMapIdState] = useState<string | null>(null);
 
+  // Load maps when campaign changes
   useEffect(() => {
-    const loadedMaps = loadMaps();
-    setMaps(loadedMaps);
-    
-    const savedActiveMapId = getActiveMapId();
-    if (savedActiveMapId && loadedMaps.find(m => m.id === savedActiveMapId)) {
-      setActiveMapIdState(savedActiveMapId);
-      setActiveMapId(savedActiveMapId);
-    } else if (loadedMaps.length > 0) {
-      setActiveMapIdState(loadedMaps[0].id);
-      setActiveMapId(loadedMaps[0].id);
-    }
-  }, []);
+    if (activeCampaignId) {
+      const loadedMaps = loadMaps(activeCampaignId);
+      setMaps(loadedMaps);
 
-  useEffect(() => {
-    if (maps.length > 0) {
-      saveMaps(maps);
+      const savedActiveMapId = getActiveMapId(activeCampaignId);
+      if (savedActiveMapId && loadedMaps.find(m => m.id === savedActiveMapId)) {
+        setActiveMapIdState(savedActiveMapId);
+      } else if (loadedMaps.length > 0) {
+        setActiveMapIdState(loadedMaps[0].id);
+        setActiveMapId(activeCampaignId, loadedMaps[0].id);
+      }
+    } else {
+      setMaps([]);
+      setActiveMapIdState(null);
     }
-  }, [maps]);
+  }, [activeCampaignId]);
 
+  // Save maps when they change
   useEffect(() => {
-    const loadedMaps = loadMaps();
-    setMaps(loadedMaps);
-    
-    const savedActiveMapId = getActiveMapId();
-    if (savedActiveMapId && loadedMaps.find(m => m.id === savedActiveMapId)) {
-      setActiveMapIdState(savedActiveMapId);
-      setActiveMapId(savedActiveMapId);
-    } else if (loadedMaps.length > 0) {
-      setActiveMapIdState(loadedMaps[0].id);
-      setActiveMapId(loadedMaps[0].id);
+    if (activeCampaignId && maps.length > 0) {
+      saveMaps(activeCampaignId, maps);
     }
-  }, []);
-
-  useEffect(() => {
-    if (maps.length > 0) {
-      saveMaps(maps);
-    }
-  }, [maps]);
+  }, [maps, activeCampaignId]);
 
   const handleAddEntity = (type: EntityType, name: string, description: string, tags: string[]) => {
     const newEntity = createEntity(type, name, description, tags);
@@ -83,19 +79,23 @@ function App() {
   };
 
   const handleMapChange = (mapId: string) => {
-    setActiveMapIdState(mapId);
-    setActiveMapId(mapId);
+    if (activeCampaignId) {
+      setActiveMapIdState(mapId);
+      setActiveMapId(activeCampaignId, mapId);
+    }
   };
 
   const activeMap = maps.find(m => m.id === activeMapId) || null;
 
   const handleExport = () => {
-    const data = exportData();
+    if (!activeCampaignId) return;
+    const data = exportData(activeCampaignId);
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `jdrprep-export-${new Date().toISOString().split('T')[0]}.json`;
+    const campaignName = activeCampaign?.name.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'campaign';
+    a.download = `jdrprep-${campaignName}-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -103,6 +103,7 @@ function App() {
   };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!activeCampaignId) return;
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -110,21 +111,21 @@ function App() {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target?.result as string) as ExportData;
-        const result = importData(data);
-        
+        const result = importData(activeCampaignId, data);
+
         if (!result.success) {
           alert(`Import failed: ${result.error}`);
           return;
         }
-        
+
         reloadEntities();
         setSelectedEntity(null);
         // Reload maps after import
-        const loadedMaps = loadMaps();
+        const loadedMaps = loadMaps(activeCampaignId);
         setMaps(loadedMaps);
         if (loadedMaps.length > 0) {
           setActiveMapIdState(loadedMaps[0].id);
-          setActiveMapId(loadedMaps[0].id);
+          setActiveMapId(activeCampaignId, loadedMaps[0].id);
         }
       } catch (error) {
         alert('Import failed: Invalid JSON file format. Please check the file and try again.');
@@ -140,7 +141,14 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>🎲 JDR Prep - Roleplay Session Planner</h1>
-        <div className="header-actions">
+        <div className="header-controls">
+          <CampaignSelector
+            campaigns={campaigns}
+            activeCampaign={activeCampaign}
+            onSelectCampaign={setActiveCampaign}
+            onAddCampaign={addCampaign}
+            onDeleteCampaign={deleteCampaign}
+          />
           <nav className="view-switcher">
             <button
               className={currentView === 'entities' ? 'active' : ''}
@@ -222,6 +230,7 @@ function App() {
         ) : (
           <MapEditor
             entities={entities}
+            campaignId={activeCampaignId}
             maps={maps}
             activeMap={activeMap}
             onUpdateMap={(updatedMap) => {

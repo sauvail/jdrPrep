@@ -6,6 +6,7 @@ import DrawingTools from './DrawingTools';
 
 interface MapEditorProps {
   entities: Entity[];
+  campaignId: string | null;
   maps: Map[];
   activeMap: Map | null;
   onUpdateMap: (map: Map) => void;
@@ -16,6 +17,7 @@ interface MapEditorProps {
 
 const MapEditor: React.FC<MapEditorProps> = ({
   entities,
+  campaignId: _campaignId,
   maps,
   activeMap,
   onUpdateMap,
@@ -25,7 +27,8 @@ const MapEditor: React.FC<MapEditorProps> = ({
 }) => {
   const MAX_IMPORTED_IMAGE_SIZE = 300;
   const MIN_IMAGE_SIZE = 50;
-  
+  const GRID_SIZE = 69; // Size 15% bigger than character icon (60px × 1.15)
+
   const [draggedEntity, setDraggedEntity] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
@@ -43,8 +46,6 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; imageId: string } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const GRID_SIZE = 69; // Size 15% bigger than character icon (60px × 1.15)
 
   const drawings = activeMap?.data.drawings || [];
   const images = activeMap?.data.images || [];
@@ -73,7 +74,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent, entityId: string) => {
     if (isDrawingMode || !activeMap) return;
-    
+
     const position = entityPositions[entityId];
     if (position && mapRef.current) {
       const rect = mapRef.current.getBoundingClientRect();
@@ -96,12 +97,12 @@ const MapEditor: React.FC<MapEditorProps> = ({
       const currentY = e.clientY - rect.top;
       const deltaX = currentX - resizeStart.x;
       const deltaY = currentY - resizeStart.y;
-      
+
       const newWidth = Math.max(MIN_IMAGE_SIZE, resizeStart.width + deltaX);
       const newHeight = Math.max(MIN_IMAGE_SIZE, resizeStart.height + deltaY);
-      
+
       updateActiveMapData({
-        images: images.map(img => 
+        images: images.map(img =>
           img.id === resizingImage
             ? { ...img, width: newWidth, height: newHeight }
             : img
@@ -114,9 +115,9 @@ const MapEditor: React.FC<MapEditorProps> = ({
       const imgHeight = draggedImg?.height || 100;
       const x = Math.max(0, Math.min(rect.width - imgWidth, e.clientX - rect.left - dragOffset.x));
       const y = Math.max(0, Math.min(rect.height - imgHeight, e.clientY - rect.top - dragOffset.y));
-      
+
       updateActiveMapData({
-        images: images.map(img => 
+        images: images.map(img =>
           img.id === draggedImage
             ? { ...img, position: { x, y } }
             : img
@@ -126,7 +127,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
       const rect = mapRef.current.getBoundingClientRect();
       const x = Math.max(0, Math.min(rect.width - 80, e.clientX - rect.left - dragOffset.x));
       const y = Math.max(0, Math.min(rect.height - 60, e.clientY - rect.top - dragOffset.y));
-      
+
       updateActiveMapData({
         entityPositions: {
           ...entityPositions,
@@ -178,7 +179,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         // Calculate dimensions maintaining aspect ratio, max size on longest side
         let width = img.width;
         let height = img.height;
-        
+
         if (width > MAX_IMPORTED_IMAGE_SIZE || height > MAX_IMPORTED_IMAGE_SIZE) {
           if (width > height) {
             height = (MAX_IMPORTED_IMAGE_SIZE / width) * height;
@@ -188,7 +189,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
             height = MAX_IMPORTED_IMAGE_SIZE;
           }
         }
-        
+
         const newImage: MapImage = {
           id: generateId('image'),
           dataUrl,
@@ -204,7 +205,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
       img.src = dataUrl;
     };
     reader.readAsDataURL(file);
-    
+
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -214,7 +215,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const handleImageMouseDown = (e: React.MouseEvent, imageId: string) => {
     if (isDrawingMode) return;
     e.stopPropagation();
-    
+
     const image = images.find(img => img.id === imageId);
     if (image && mapRef.current) {
       const rect = mapRef.current.getBoundingClientRect();
@@ -228,7 +229,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const handleResizeMouseDown = (e: React.MouseEvent, imageId: string) => {
     if (isDrawingMode) return;
     e.stopPropagation();
-    
+
     const image = images.find(img => img.id === imageId);
     if (image && mapRef.current) {
       const rect = mapRef.current.getBoundingClientRect();
@@ -257,7 +258,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const bringToFront = (imageId: string) => {
     const maxZIndex = Math.max(...images.map(img => img.zIndex));
     updateActiveMapData({
-      images: images.map(img => 
+      images: images.map(img =>
         img.id === imageId ? { ...img, zIndex: maxZIndex + 1 } : img
       ),
     });
@@ -267,7 +268,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const sendToBack = (imageId: string) => {
     const minZIndex = Math.min(...images.map(img => img.zIndex));
     updateActiveMapData({
-      images: images.map(img => 
+      images: images.map(img =>
         img.id === imageId ? { ...img, zIndex: minZIndex - 1 } : img
       ),
     });
@@ -277,9 +278,9 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const getConnectionPath = (entity: Entity, targetEntity: Entity) => {
     const pos1 = entityPositions[entity.id];
     const pos2 = entityPositions[targetEntity.id];
-    
+
     if (!pos1 || !pos2) return null;
-    
+
     const x1 = pos1.x + 40; // Center of entity
     const y1 = pos1.y + 30;
     const x2 = pos2.x + 40;
@@ -296,13 +297,13 @@ const MapEditor: React.FC<MapEditorProps> = ({
 
   const renderGrid = () => {
     if (!showGrid || !mapRef.current) return null;
-    
+
     const rect = mapRef.current.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
-    
+
     const lines = [];
-    
+
     // Vertical lines
     for (let x = 0; x <= width; x += GRID_SIZE) {
       lines.push(
@@ -317,7 +318,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         />
       );
     }
-    
+
     // Horizontal lines
     for (let y = 0; y <= height; y += GRID_SIZE) {
       lines.push(
@@ -332,7 +333,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         />
       );
     }
-    
+
     return <g className="grid-layer">{lines}</g>;
   };
 
@@ -415,7 +416,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
             </>
           )}
         </div>
-        
+
         <div className="map-selector">
           <label>Select Map:</label>
           <select value={activeMap.id} onChange={(e) => onMapChange(e.target.value)}>
@@ -423,7 +424,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
               <option key={map.id} value={map.id}>{map.name}</option>
             ))}
           </select>
-          
+
           {showNewMapForm ? (
             <div className="new-map-form">
               <input
@@ -440,7 +441,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
           ) : (
             <button onClick={() => setShowNewMapForm(true)}>+ New Map</button>
           )}
-          
+
           {maps.length > 1 && (
             <button className="delete-map-btn" onClick={handleDeleteCurrentMap}>
               🗑️ Delete Map
@@ -448,7 +449,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
           )}
         </div>
       </div>
-      
+
       <input
         ref={fileInputRef}
         type="file"
@@ -456,7 +457,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         onChange={handleImageImport}
         style={{ display: 'none' }}
       />
-      
+
       <DrawingTools
         selectedColor={selectedColor}
         selectedThickness={selectedThickness}
@@ -482,7 +483,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         <svg className="connection-layer">
           {/* Grid */}
           {renderGrid()}
-          
+
           {/* Drawings */}
           {drawings.map((stroke) => (
             <path
@@ -495,7 +496,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
               strokeLinejoin="round"
             />
           ))}
-          
+
           {/* Current stroke being drawn */}
           {currentStroke.length > 0 && (
             <path
@@ -581,7 +582,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
         {entitiesOnMap.map(entity => {
           const position = entityPositions[entity.id];
           if (!position) return null;
-          
+
           return (
             <div
               key={entity.id}

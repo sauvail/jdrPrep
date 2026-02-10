@@ -158,3 +158,11 @@ export interface Map {
   createdAt: number;
   updatedAt: number;
 }
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: number;
+  updatedAt: number;
+}

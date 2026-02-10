@@ -1,49 +1,83 @@
-import { Entity, EntityType, Map } from '../types';
+import { Entity, EntityType, Map, Campaign } from '../types';
 import { generateId } from './idGenerator';
 
-const STORAGE_KEY = 'jdrprep_entities';
-const MAPS_STORAGE_KEY = 'jdrprep_maps';
-const ACTIVE_MAP_KEY = 'jdrprep_active_map';
+const CAMPAIGNS_KEY = 'jdrprep_campaigns';
+const ACTIVE_CAMPAIGN_KEY = 'jdrprep_active_campaign';
 
-export const loadEntities = (): Entity[] => {
-  const stored = localStorage.getItem(STORAGE_KEY);
+// Campaign management
+export const loadCampaigns = (): Campaign[] => {
+  const stored = localStorage.getItem(CAMPAIGNS_KEY);
   return stored ? JSON.parse(stored) : [];
 };
 
-export const saveEntities = (entities: Entity[]): void => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entities));
+export const saveCampaigns = (campaigns: Campaign[]): void => {
+  localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(campaigns));
 };
 
-// Multiple Maps Support
-export const loadMaps = (): Map[] => {
-  const stored = localStorage.getItem(MAPS_STORAGE_KEY);
+export const getActiveCampaignId = (): string | null => {
+  return localStorage.getItem(ACTIVE_CAMPAIGN_KEY);
+};
+
+export const setActiveCampaignId = (campaignId: string): void => {
+  localStorage.setItem(ACTIVE_CAMPAIGN_KEY, campaignId);
+};
+
+export const createCampaign = (name: string, description: string): Campaign => {
+  return {
+    id: generateId('campaign'),
+    name,
+    description,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+};
+
+// Campaign-scoped storage keys
+const getCampaignEntitiesKey = (campaignId: string) => `jdrprep_entities_${campaignId}`;
+const getCampaignMapsKey = (campaignId: string) => `jdrprep_maps_${campaignId}`;
+const getCampaignActiveMapKey = (campaignId: string) => `jdrprep_active_map_${campaignId}`;
+
+// Campaign-scoped entity storage
+export const loadEntities = (campaignId: string): Entity[] => {
+  const stored = localStorage.getItem(getCampaignEntitiesKey(campaignId));
+  return stored ? JSON.parse(stored) : [];
+};
+
+export const saveEntities = (campaignId: string, entities: Entity[]): void => {
+  localStorage.setItem(getCampaignEntitiesKey(campaignId), JSON.stringify(entities));
+};
+
+// Campaign-scoped maps storage (multiple maps per campaign)
+export const loadMaps = (campaignId: string): Map[] => {
+  const stored = localStorage.getItem(getCampaignMapsKey(campaignId));
   if (stored) {
     return JSON.parse(stored);
   }
-  // Migration: check for old map data
-  const oldMapData = localStorage.getItem('jdrprep_map_data');
+  // Migration: check for old map data for this campaign
+  const oldMapData = localStorage.getItem(`jdrprep_map_data_${campaignId}`);
   if (oldMapData) {
     const parsed = JSON.parse(oldMapData);
     const defaultMap = createMap('Default Map');
     defaultMap.data.drawings = parsed.drawings || [];
     defaultMap.data.images = parsed.images || [];
     defaultMap.data.showGrid = parsed.showGrid || false;
+    defaultMap.data.entityPositions = parsed.entityPositions || {};
     return [defaultMap];
   }
   // Create default map
   return [createMap('Default Map')];
 };
 
-export const saveMaps = (maps: Map[]): void => {
-  localStorage.setItem(MAPS_STORAGE_KEY, JSON.stringify(maps));
+export const saveMaps = (campaignId: string, maps: Map[]): void => {
+  localStorage.setItem(getCampaignMapsKey(campaignId), JSON.stringify(maps));
 };
 
-export const getActiveMapId = (): string | null => {
-  return localStorage.getItem(ACTIVE_MAP_KEY);
+export const getActiveMapId = (campaignId: string): string | null => {
+  return localStorage.getItem(getCampaignActiveMapKey(campaignId));
 };
 
-export const setActiveMapId = (mapId: string): void => {
-  localStorage.setItem(ACTIVE_MAP_KEY, mapId);
+export const setActiveMapId = (campaignId: string, mapId: string): void => {
+  localStorage.setItem(getCampaignActiveMapKey(campaignId), mapId);
 };
 
 export const createMap = (name: string): Map => {
@@ -89,7 +123,7 @@ export const addConnection = (entity: Entity, targetId: string, type: string, de
     type,
     description,
   };
-  
+
   return {
     ...entity,
     connections: [...entity.connections, connection],
@@ -113,7 +147,7 @@ export const updateEntityPosition = (entity: Entity, position: { x: number; y: n
   };
 };
 
-// Export/Import functionality
+// Export/Import functionality (campaign-scoped with multiple maps)
 export interface ExportData {
   entities: Entity[];
   maps: Map[];
@@ -121,16 +155,16 @@ export interface ExportData {
   version: string;
 }
 
-export const exportData = (): ExportData => {
+export const exportData = (campaignId: string): ExportData => {
   return {
-    entities: loadEntities(),
-    maps: loadMaps(),
+    entities: loadEntities(campaignId),
+    maps: loadMaps(campaignId),
     exportedAt: Date.now(),
     version: '2.0',
   };
 };
 
-export const importData = (data: ExportData): { success: boolean; error?: string } => {
+export const importData = (campaignId: string, data: ExportData): { success: boolean; error?: string } => {
   try {
     // Validate data structure
     if (!data || typeof data !== 'object') {
@@ -139,7 +173,7 @@ export const importData = (data: ExportData): { success: boolean; error?: string
 
     // Check version compatibility - support both v1.0 (old format) and v2.0 (new format with maps)
     const version = data.version || '1.0';
-    
+
     // Validate entities array
     if (data.entities && !Array.isArray(data.entities)) {
       return { success: false, error: 'Invalid entities format: expected an array' };
@@ -147,7 +181,7 @@ export const importData = (data: ExportData): { success: boolean; error?: string
 
     // Import the data
     if (data.entities) {
-      saveEntities(data.entities);
+      saveEntities(campaignId, data.entities);
     }
 
     // Handle different versions
@@ -156,7 +190,7 @@ export const importData = (data: ExportData): { success: boolean; error?: string
       if (!Array.isArray(data.maps)) {
         return { success: false, error: 'Invalid maps format: expected an array' };
       }
-      saveMaps(data.maps);
+      saveMaps(campaignId, data.maps);
     } else if ((data as any).mapData) {
       // Old format with single mapData - migrate to new format
       const oldMapData = (data as any).mapData;
@@ -165,10 +199,10 @@ export const importData = (data: ExportData): { success: boolean; error?: string
       defaultMap.data.showGrid = oldMapData.showGrid || false;
       defaultMap.data.images = oldMapData.images || [];
       defaultMap.data.entityPositions = oldMapData.entityPositions || {};
-      saveMaps([defaultMap]);
+      saveMaps(campaignId, [defaultMap]);
     } else {
       // No map data - create a default empty map
-      saveMaps([createMap('Default Map')]);
+      saveMaps(campaignId, [createMap('Default Map')]);
     }
 
     return { success: true };

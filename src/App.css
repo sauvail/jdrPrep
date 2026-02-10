@@ -34,10 +34,10 @@ body {
   font-weight: 600;
 }
 
-.header-actions {
+.header-controls {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 .view-switcher {
