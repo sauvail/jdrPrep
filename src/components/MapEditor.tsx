@@ -684,6 +684,8 @@ const MapEditor: React.FC<MapEditorProps> = ({
           const position = entityPositions[entity.id];
           if (!position) return null;
 
+          const entityLetter = entity.type[0].toUpperCase();
+
           return (
             <div
               key={entity.id}
@@ -697,8 +699,16 @@ const MapEditor: React.FC<MapEditorProps> = ({
               onMouseDown={(e) => handleMouseDown(e, entity.id)}
               onClick={(e) => handleEntityClick(e, entity.id)}
             >
-              <div className="entity-icon">{entity.type[0].toUpperCase()}</div>
-              <div className="entity-label">{entity.name}</div>
+              {entity.type === 'location' ? (
+                <div className="entity-icon">{entity.name}</div>
+              ) : entity.type === 'organization' ? (
+                <div className="entity-icon">
+                  <span className="entity-letter">{entityLetter}</span>
+                </div>
+              ) : (
+                <div className="entity-icon">{entityLetter}</div>
+              )}
+              {entity.type !== 'location' && <div className="entity-label">{entity.name}</div>}
             </div>
           );
         })}
