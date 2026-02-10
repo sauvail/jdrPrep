@@ -160,10 +160,10 @@ const MapEditor: React.FC<MapEditorProps> = ({
       const imgWidth = draggedImg?.width || 100;
       const imgHeight = draggedImg?.height || 100;
       const canvasPos = screenToCanvas(e.clientX, e.clientY);
-      const canvasWidth = (mapRef.current.getBoundingClientRect().width) / zoom;
-      const canvasHeight = (mapRef.current.getBoundingClientRect().height) / zoom;
-      const x = Math.max(0, Math.min(canvasWidth - imgWidth, canvasPos.x - dragOffset.x));
-      const y = Math.max(0, Math.min(canvasHeight - imgHeight, canvasPos.y - dragOffset.y));
+      const maxWidth = gridWidth * GRID_SIZE;
+      const maxHeight = gridHeight * GRID_SIZE;
+      const x = Math.max(0, Math.min(maxWidth - imgWidth, canvasPos.x - dragOffset.x));
+      const y = Math.max(0, Math.min(maxHeight - imgHeight, canvasPos.y - dragOffset.y));
 
       updateActiveMapData({
         images: images.map(img =>
@@ -174,10 +174,10 @@ const MapEditor: React.FC<MapEditorProps> = ({
       });
     } else if (draggedEntity && mapRef.current && activeMap) {
       const canvasPos = screenToCanvas(e.clientX, e.clientY);
-      const canvasWidth = (mapRef.current.getBoundingClientRect().width) / zoom;
-      const canvasHeight = (mapRef.current.getBoundingClientRect().height) / zoom;
-      const x = Math.max(0, Math.min(canvasWidth - 80, canvasPos.x - dragOffset.x));
-      const y = Math.max(0, Math.min(canvasHeight - 60, canvasPos.y - dragOffset.y));
+      const maxWidth = gridWidth * GRID_SIZE;
+      const maxHeight = gridHeight * GRID_SIZE;
+      const x = Math.max(0, Math.min(maxWidth - 80, canvasPos.x - dragOffset.x));
+      const y = Math.max(0, Math.min(maxHeight - 60, canvasPos.y - dragOffset.y));
 
       updateActiveMapData({
         entityPositions: {
@@ -370,7 +370,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
           y1={0}
           x2={x}
           y2={height}
-          stroke="#ddd"
+          stroke="var(--border-color)"
           strokeWidth="1"
         />
       );
@@ -385,7 +385,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
           y1={y}
           x2={width}
           y2={y}
-          stroke="#ddd"
+          stroke="var(--border-color)"
           strokeWidth="1"
         />
       );
