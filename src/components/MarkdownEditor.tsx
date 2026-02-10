@@ -1,25 +1,31 @@
 import React from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { Entity } from '../types';
+import { replaceEntityTags } from '../utils/entityTagParser';
 
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   rows?: number;
+  entities?: Entity[];
 }
 
-const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ 
-  value, 
-  onChange, 
+const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
+  value,
+  onChange,
   placeholder = 'Enter description (supports markdown)...',
-  rows = 6
+  rows = 6,
+  entities = []
 }) => {
   // Parse markdown to HTML
   const getMarkdownPreview = () => {
     if (!value) return '<p class="markdown-placeholder">Preview will appear here...</p>';
     try {
-      const rawHTML = marked.parse(value) as string;
+      // First replace entity tags, then parse markdown
+      const textWithEntityTags = replaceEntityTags(value, entities);
+      const rawHTML = marked.parse(textWithEntityTags) as string;
       return DOMPurify.sanitize(rawHTML);
     } catch (error) {
       return '<p class="markdown-error">Error parsing markdown</p>';
