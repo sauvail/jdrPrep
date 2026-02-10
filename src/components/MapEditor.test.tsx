@@ -504,4 +504,36 @@ describe('MapEditor Entity Filter', () => {
       expect(connectionPaths.length).toBeGreaterThan(0);
     });
   });
+
+  describe('Entity List Scrolling', () => {
+    it('renders entity list with entity-list class for scrolling', () => {
+      const { container } = render(<MapEditor {...defaultProps} />);
+
+      const entityList = container.querySelector('.entity-list');
+      expect(entityList).toBeInTheDocument();
+
+      // Check that entity list has the correct class
+      expect(entityList).toHaveClass('entity-list');
+    });
+
+    it('renders map-controls container with map-controls class', () => {
+      const { container } = render(<MapEditor {...defaultProps} />);
+
+      const mapControls = container.querySelector('.map-controls');
+      expect(mapControls).toBeInTheDocument();
+
+      // Check that map-controls has the correct class
+      expect(mapControls).toHaveClass('map-controls');
+    });
+
+    it('renders entity list inside map-controls container', () => {
+      const { container } = render(<MapEditor {...defaultProps} />);
+
+      const mapControls = container.querySelector('.map-controls');
+      const entityList = mapControls?.querySelector('.entity-list');
+
+      expect(entityList).toBeInTheDocument();
+      expect(mapControls).toContainElement(entityList);
+    });
+  });
 });
