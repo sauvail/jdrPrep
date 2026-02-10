@@ -383,7 +383,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   };
 
   const renderGrid = () => {
-    if (!showGrid || !mapRef.current) return null;
+    if (!showGrid) return null;
 
     const width = gridWidth * GRID_SIZE;
     const height = gridHeight * GRID_SIZE;
@@ -399,7 +399,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
           y1={0}
           x2={x}
           y2={height}
-          stroke="var(--border-color)"
+          stroke="var(--grid-color)"
           strokeWidth="1"
         />
       );
@@ -414,7 +414,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
           y1={y}
           x2={width}
           y2={y}
-          stroke="var(--border-color)"
+          stroke="var(--grid-color)"
           strokeWidth="1"
         />
       );
