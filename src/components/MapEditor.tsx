@@ -3,6 +3,7 @@ import { Entity, DrawingStroke, Position, Map, MapImage } from '../types';
 import { updateMap } from '../utils/storage';
 import { generateId } from '../utils/idGenerator';
 import DrawingTools from './DrawingTools';
+import EntityDetail from './EntityDetail';
 
 interface MapEditorProps {
   entities: Entity[];
@@ -13,6 +14,7 @@ interface MapEditorProps {
   onCreateMap: (name: string) => void;
   onDeleteMap: (mapId: string) => void;
   onMapChange: (mapId: string) => void;
+  onUpdateEntity: (id: string, updates: Partial<Entity>) => void;
 }
 
 const MapEditor: React.FC<MapEditorProps> = ({
@@ -24,12 +26,14 @@ const MapEditor: React.FC<MapEditorProps> = ({
   onCreateMap,
   onDeleteMap,
   onMapChange,
+  onUpdateEntity,
 }) => {
   const MAX_IMPORTED_IMAGE_SIZE = 300;
   const MIN_IMAGE_SIZE = 50;
   const GRID_SIZE = 69; // Size 15% bigger than character icon (60px × 1.15)
 
   const [draggedEntity, setDraggedEntity] = useState<string | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDrawingMode, setIsDrawingMode] = useState(false);
@@ -82,6 +86,14 @@ const MapEditor: React.FC<MapEditorProps> = ({
       const offsetY = e.clientY - rect.top - position.y;
       setDragOffset({ x: offsetX, y: offsetY });
       setDraggedEntity(entityId);
+    }
+  };
+
+  const handleEntityClick = (e: React.MouseEvent, entityId: string) => {
+    // Only trigger click if we didn't drag
+    if (!draggedEntity) {
+      e.stopPropagation();
+      setSelectedEntity(entityId);
     }
   };
 
@@ -450,15 +462,17 @@ const MapEditor: React.FC<MapEditorProps> = ({
         </div>
       </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleImageImport}
-        style={{ display: 'none' }}
-      />
+      <div className="map-content-wrapper">
+        <div className="map-canvas-section">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageImport}
+            style={{ display: 'none' }}
+          />
 
-      <DrawingTools
+          <DrawingTools
         selectedColor={selectedColor}
         selectedThickness={selectedThickness}
         isDrawing={isDrawingMode}
@@ -594,6 +608,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
                 pointerEvents: isDrawingMode ? 'none' : 'auto',
               }}
               onMouseDown={(e) => handleMouseDown(e, entity.id)}
+              onClick={(e) => handleEntityClick(e, entity.id)}
             >
               <div className="entity-icon">{entity.type[0].toUpperCase()}</div>
               <div className="entity-label">{entity.name}</div>
@@ -618,6 +633,30 @@ const MapEditor: React.FC<MapEditorProps> = ({
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+      </div>
+
+        </div>
+
+        {/* Entity Detail Panel */}
+        {selectedEntity && (
+          <div className="map-entity-detail">
+            <div className="entity-detail-header">
+              <h3>Entity Details</h3>
+              <button
+                className="close-detail-btn"
+                onClick={() => setSelectedEntity(null)}
+                aria-label="Close entity details"
+              >
+                ×
+              </button>
+            </div>
+            <EntityDetail
+              entity={entities.find(e => e.id === selectedEntity)!}
+              entities={entities}
+              onUpdate={onUpdateEntity}
+            />
           </div>
         )}
       </div>

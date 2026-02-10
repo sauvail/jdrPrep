@@ -249,6 +249,7 @@ function App() {
               }
             }}
             onMapChange={handleMapChange}
+            onUpdateEntity={handleUpdateEntity}
           />
         )}
       </main>
