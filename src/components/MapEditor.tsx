@@ -58,6 +58,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [entityFilter, setEntityFilter] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,6 +103,23 @@ const MapEditor: React.FC<MapEditorProps> = ({
     setPan({ x: 0, y: 0 });
   };
 
+  // Fullscreen handler
+  const handleFullscreenToggle = async () => {
+    if (!mapRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await mapRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Error toggling fullscreen:', error);
+    }
+  };
+
   // Close context menu on click outside
   useEffect(() => {
     const handleClick = () => setContextMenu(null);
@@ -110,6 +128,16 @@ const MapEditor: React.FC<MapEditorProps> = ({
       return () => document.removeEventListener('click', handleClick);
     }
   }, [contextMenu]);
+
+  // Handle fullscreen change events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent, entityId: string) => {
     if (isDrawingMode || !activeMap || isPanning) return;
@@ -547,6 +575,9 @@ const MapEditor: React.FC<MapEditorProps> = ({
         <span>{Math.round(zoom * 100)}%</span>
         <button onClick={handleZoomOut} disabled={zoom <= MIN_ZOOM} title="Zoom Out">-</button>
         <button onClick={handleResetZoom} title="Reset Zoom">Reset</button>
+        <button onClick={handleFullscreenToggle} title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"} className="fullscreen-btn">
+          {isFullscreen ? '⊗' : '⛶'}
+        </button>
       </div>
 
       {/* Grid Size Configuration */}

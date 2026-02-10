@@ -225,4 +225,64 @@ describe('MapEditor Entity Filter', () => {
       expect(screen.queryByText('Add Entities to Map')).not.toBeInTheDocument();
     });
   });
+
+  describe('Fullscreen Functionality', () => {
+    beforeEach(() => {
+      // Mock requestFullscreen and exitFullscreen
+      HTMLElement.prototype.requestFullscreen = vi.fn().mockResolvedValue(undefined);
+      document.exitFullscreen = vi.fn().mockResolvedValue(undefined);
+
+      // Mock fullscreenElement
+      Object.defineProperty(document, 'fullscreenElement', {
+        writable: true,
+        value: null,
+      });
+    });
+
+    it('renders fullscreen button', () => {
+      render(<MapEditor {...defaultProps} />);
+
+      const fullscreenButton = screen.getByTitle('Enter Fullscreen');
+      expect(fullscreenButton).toBeInTheDocument();
+    });
+
+    it('calls requestFullscreen when entering fullscreen', async () => {
+      const { container } = render(<MapEditor {...defaultProps} />);
+
+      const fullscreenButton = screen.getByTitle('Enter Fullscreen');
+      fireEvent.click(fullscreenButton);
+
+      expect(HTMLElement.prototype.requestFullscreen).toHaveBeenCalled();
+    });
+
+    it('changes button text when fullscreen state changes', async () => {
+      const { rerender } = render(<MapEditor {...defaultProps} />);
+
+      // Initially should show "Enter Fullscreen"
+      expect(screen.getByTitle('Enter Fullscreen')).toBeInTheDocument();
+
+      // Simulate entering fullscreen
+      Object.defineProperty(document, 'fullscreenElement', {
+        writable: true,
+        value: document.createElement('div'),
+      });
+
+      // Trigger fullscreen change event
+      const event = new Event('fullscreenchange');
+      document.dispatchEvent(event);
+
+      // Re-render to see the updated state
+      rerender(<MapEditor {...defaultProps} />);
+
+      // Should now show "Exit Fullscreen"
+      expect(screen.getByTitle('Exit Fullscreen')).toBeInTheDocument();
+    });
+
+    it('shows fullscreen icon when not in fullscreen', () => {
+      render(<MapEditor {...defaultProps} />);
+
+      const fullscreenButton = screen.getByTitle('Enter Fullscreen');
+      expect(fullscreenButton.textContent).toBe('⛶');
+    });
+  });
 });

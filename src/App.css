@@ -862,6 +862,15 @@ body {
   text-align: center;
 }
 
+.zoom-controls .fullscreen-btn {
+  background: #9b59b6;
+  margin-left: auto;
+}
+
+.zoom-controls .fullscreen-btn:hover:not(:disabled) {
+  background: #8e44ad;
+}
+
 /* Grid Size Controls */
 .grid-size-controls {
   background: var(--bg-secondary);
