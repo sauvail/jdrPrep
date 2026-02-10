@@ -30,6 +30,7 @@ export interface MapImage {
 
 export type CreatureRole = 'caster' | 'fighter' | 'tank' | 'ranged' | 'support' | 'skirmisher';
 
+// Inventory items (from master)
 export interface Spell {
   id: string;
   name: string;
@@ -84,6 +85,47 @@ export interface EncounterData {
   totalXP?: number;
 }
 
+// Character Building Types (from feature branch)
+export type CharacterClass = 'fighter' | 'wizard' | 'cleric' | 'rogue' | 'ranger' | 'barbarian' | 'bard' | 'druid' | 'monk' | 'paladin' | 'sorcerer';
+export type CharacterRace = 'human' | 'elf' | 'dwarf' | 'halfling' | 'gnome' | 'goblin' | 'orc' | 'half-elf' | 'half-orc';
+
+export interface AbilityScores {
+  strength: number;
+  dexterity: number;
+  constitution: number;
+  intelligence: number;
+  wisdom: number;
+  charisma: number;
+}
+
+// Character builder spell (different from inventory Spell)
+export interface CharacterSpell {
+  id: string;
+  name: string;
+  level: number;
+  description: string;
+  damage?: string;
+  saveDC?: number;
+}
+
+export interface Attack {
+  id: string;
+  name: string;
+  attackBonus: number;
+  damage: string;
+  damageType?: string;
+}
+
+export interface CharacterData {
+  class?: CharacterClass;
+  race?: CharacterRace;
+  level: number;
+  abilityScores?: AbilityScores;
+  spells: CharacterSpell[];
+  attacks: Attack[];
+  features: string[];
+}
+
 export interface Entity {
   id: string;
   type: EntityType;
@@ -94,6 +136,7 @@ export interface Entity {
   createdAt: number;
   updatedAt: number;
   encounterData?: EncounterData;
+  characterData?: CharacterData;
   tags?: string[];
   spells?: Spell[];
   weapons?: Weapon[];

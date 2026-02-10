@@ -7,6 +7,7 @@ import MarkdownEditor from './MarkdownEditor';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import InventoryManager from './InventoryManager';
+import CharacterBuilder from './CharacterBuilder';
 
 interface EntityDetailProps {
   entity: Entity;
@@ -181,6 +182,13 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
           armors={entity.armors || []}
           pets={entity.pets || []}
           onUpdate={(updates) => onUpdate(entity.id, updates)}
+        />
+      )}
+
+      {(entity.type === 'character' || entity.type === 'creature') && (
+        <CharacterBuilder
+          characterData={entity.characterData || { level: 1, spells: [], attacks: [], features: [] }}
+          onUpdate={(characterData) => onUpdate(entity.id, { characterData })}
         />
       )}
 

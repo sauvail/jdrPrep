@@ -69,37 +69,6 @@ export const updateMap = (map: Map, updates: Partial<Map>): Map => {
   };
 };
 
-export const getActiveMapId = (): string | null => {
-  return localStorage.getItem(ACTIVE_MAP_KEY);
-};
-
-export const setActiveMapId = (mapId: string): void => {
-  localStorage.setItem(ACTIVE_MAP_KEY, mapId);
-};
-
-export const createMap = (name: string): Map => {
-  return {
-    id: generateId('map'),
-    name,
-    data: {
-      drawings: [],
-      images: [],
-      entityPositions: {},
-      showGrid: false,
-    },
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  };
-};
-
-export const updateMap = (map: Map, updates: Partial<Map>): Map => {
-  return {
-    ...map,
-    ...updates,
-    updatedAt: Date.now(),
-  };
-};
-
 export const createEntity = (type: EntityType, name: string, description: string, tags: string[] = []): Entity => {
   return {
     id: generateId(type),
