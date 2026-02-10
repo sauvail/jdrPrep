@@ -69,7 +69,6 @@ export const updateMap = (map: Map, updates: Partial<Map>): Map => {
   };
 };
 
-
 export const createEntity = (type: EntityType, name: string, description: string, tags: string[] = []): Entity => {
   return {
     id: generateId(type),
