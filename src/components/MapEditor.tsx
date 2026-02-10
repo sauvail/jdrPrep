@@ -248,7 +248,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
       return;
     }
 
-    if (isDrawingMode && e.target === mapRef.current) {
+    if (isDrawingMode) {
       setIsDrawing(true);
       const canvasPos = screenToCanvas(e.clientX, e.clientY);
       setCurrentStroke([canvasPos]);
