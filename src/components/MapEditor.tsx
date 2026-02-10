@@ -428,6 +428,8 @@ const MapEditor: React.FC<MapEditorProps> = ({
 
   const handleAddEntityToMap = (entityId: string) => {
     if (!activeMap) return;
+    // Don't add entity if it's already on the map
+    if (entityPositions[entityId]) return;
     updateActiveMapData({
       entityPositions: {
         ...entityPositions,
@@ -785,15 +787,22 @@ const MapEditor: React.FC<MapEditorProps> = ({
             </div>
             {filteredEntities.length > 0 ? (
               <ul className="entity-list">
-                {filteredEntities.map(e => (
-                  <li
-                    key={`${e.id}-${Math.random()}`}
-                    onClick={() => handleAddEntityToMap(e.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {e.name} ({e.type}) - Click to add to map
-                  </li>
-                ))}
+                {filteredEntities.map(e => {
+                  const isOnMap = !!entityPositions[e.id];
+                  return (
+                    <li
+                      key={e.id}
+                      onClick={() => handleAddEntityToMap(e.id)}
+                      style={{
+                        cursor: isOnMap ? 'default' : 'pointer',
+                        opacity: isOnMap ? 0.5 : 1,
+                      }}
+                      title={isOnMap ? 'Already on map' : 'Click to add to map'}
+                    >
+                      {e.name} ({e.type}) - {isOnMap ? 'Already on map' : 'Click to add to map'}
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className="no-entities-message">No entities match your search.</p>
