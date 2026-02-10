@@ -28,8 +28,9 @@ const EntityList: React.FC<EntityListProps> = ({ entities, selectedEntity, onSel
       return entities;
     }
     return entities.filter(entity => {
+      // Show entities without tags even when filters are active
       if (!entity.tags || entity.tags.length === 0) {
-        return false;
+        return true;
       }
       return selectedTags.every(tag => entity.tags!.includes(tag));
     });
