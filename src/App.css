@@ -1175,12 +1175,13 @@ body {
 }
 
 .map-controls {
+  width: 300px;
   background: white;
   padding: 0.75rem;
   border-radius: 8px;
   border: 1px solid #ddd;
-  max-height: 400px;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .map-controls p {
@@ -1293,7 +1294,8 @@ body {
   display: flex;
   gap: 1rem;
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .map-canvas-section {
@@ -1301,7 +1303,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* Map Entity Detail Panel */
