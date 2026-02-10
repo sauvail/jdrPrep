@@ -453,7 +453,7 @@ describe('MapEditor Entity Filter', () => {
       expect(onUpdateMap).toHaveBeenCalled();
     });
 
-    it('defaults to showing connections when showConnections is not set', () => {
+    it('defaults to hiding connections when showConnections is not set', () => {
       const mapWithoutConnectionsFlag: Map = {
         ...mapWithEntitiesOnMap,
         data: {
@@ -469,7 +469,7 @@ describe('MapEditor Entity Filter', () => {
       />);
 
       const toggleButton = screen.getByTitle('Toggle entity connections');
-      expect(toggleButton.textContent).toContain('Connections ON');
+      expect(toggleButton.textContent).toContain('Connections OFF');
     });
 
     it('hides connections when showConnections is false', () => {
