@@ -702,7 +702,9 @@ const MapEditor: React.FC<MapEditorProps> = ({
               {entity.type === 'location' ? (
                 <div className="entity-icon">{entity.name}</div>
               ) : entity.type === 'organization' ? (
-                <div className="entity-icon" data-letter={entityLetter}></div>
+                <div className="entity-icon">
+                  <span className="entity-letter">{entityLetter}</span>
+                </div>
               ) : (
                 <div className="entity-icon">{entityLetter}</div>
               )}

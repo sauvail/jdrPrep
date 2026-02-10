@@ -765,8 +765,7 @@ body {
   transform: rotate(45deg);
 }
 
-.map-entity.organization .entity-icon::before {
-  content: attr(data-letter);
+.map-entity.organization .entity-letter {
   transform: rotate(-45deg);
   display: block;
 }
