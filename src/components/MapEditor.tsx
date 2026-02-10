@@ -66,6 +66,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const images = activeMap?.data.images || [];
   const entityPositions = activeMap?.data.entityPositions || {};
   const showGrid = activeMap?.data.showGrid || false;
+  const showConnections = activeMap?.data.showConnections !== false; // Default to true
   const gridWidth = activeMap?.data.gridWidth || DEFAULT_GRID_WIDTH;
   const gridHeight = activeMap?.data.gridHeight || DEFAULT_GRID_HEIGHT;
 
@@ -561,11 +562,13 @@ const MapEditor: React.FC<MapEditorProps> = ({
         selectedThickness={selectedThickness}
         isDrawing={isDrawingMode}
         showGrid={showGrid}
+        showConnections={showConnections}
         onColorChange={setSelectedColor}
         onThicknessChange={setSelectedThickness}
         onToggleDrawing={() => setIsDrawingMode(!isDrawingMode)}
         onClearDrawings={() => updateActiveMapData({ drawings: [] })}
         onToggleGrid={() => updateActiveMapData({ showGrid: !showGrid })}
+        onToggleConnections={() => updateActiveMapData({ showConnections: !showConnections })}
         onImportImage={() => fileInputRef.current?.click()}
       />
 
@@ -653,7 +656,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
           )}
 
           {/* Entity connections */}
-          {entitiesOnMap.map(entity =>
+          {showConnections && entitiesOnMap.map(entity =>
             entity.connections.map(conn => {
               const target = entities.find(e => e.id === conn.targetId);
               if (!target) return null;

@@ -5,12 +5,14 @@ interface DrawingToolsProps {
   selectedThickness: number;
   isDrawing: boolean;
   showGrid: boolean;
+  showConnections: boolean;
   onColorChange: (color: string) => void;
   onThicknessChange: (thickness: number) => void;
   onToggleDrawing: () => void;
   onClearDrawings: () => void;
   onImportImage: () => void;
   onToggleGrid: () => void;
+  onToggleConnections: () => void;
 }
 
 const DrawingTools: React.FC<DrawingToolsProps> = ({
@@ -18,12 +20,14 @@ const DrawingTools: React.FC<DrawingToolsProps> = ({
   selectedThickness,
   isDrawing,
   showGrid,
+  showConnections,
   onColorChange,
   onThicknessChange,
   onToggleDrawing,
   onClearDrawings,
   onImportImage,
   onToggleGrid,
+  onToggleConnections,
 }) => {
   const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFFFFF'];
 
@@ -54,6 +58,15 @@ const DrawingTools: React.FC<DrawingToolsProps> = ({
         aria-label={showGrid ? "Hide grid" : "Show grid"}
       >
         📐 {showGrid ? 'Grid ON' : 'Grid OFF'}
+      </button>
+
+      <button
+        className={`tool-btn ${showConnections ? 'active' : ''}`}
+        onClick={onToggleConnections}
+        title="Toggle entity connections"
+        aria-label={showConnections ? "Hide connections" : "Show connections"}
+      >
+        🔗 {showConnections ? 'Connections ON' : 'Connections OFF'}
       </button>
 
       {isDrawing && (

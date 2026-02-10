@@ -285,4 +285,153 @@ describe('MapEditor Entity Filter', () => {
       expect(fullscreenButton.textContent).toBe('⛶');
     });
   });
+
+  describe('Entity Connections Toggle', () => {
+    const mockEntitiesWithConnections: Entity[] = [
+      {
+        id: 'entity1',
+        name: 'Location A',
+        type: 'location',
+        description: 'First location',
+        connections: [{ id: 'conn1', targetId: 'entity2', type: 'connected to', description: '' }],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      {
+        id: 'entity2',
+        name: 'Location B',
+        type: 'location',
+        description: 'Second location',
+        connections: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+    ];
+
+    const mapWithEntitiesOnMap: Map = {
+      id: 'map1',
+      name: 'Test Map',
+      data: {
+        drawings: [],
+        images: [],
+        entityPositions: {
+          'entity1': { x: 50, y: 50 },
+          'entity2': { x: 200, y: 200 },
+        },
+        showGrid: false,
+        showConnections: true,
+        gridWidth: 20,
+        gridHeight: 15,
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    it('renders connections toggle button', () => {
+      render(<MapEditor
+        {...defaultProps}
+        entities={mockEntitiesWithConnections}
+        activeMap={mapWithEntitiesOnMap}
+      />);
+
+      const toggleButton = screen.getByTitle('Toggle entity connections');
+      expect(toggleButton).toBeInTheDocument();
+    });
+
+    it('shows Connections ON when connections are visible', () => {
+      render(<MapEditor
+        {...defaultProps}
+        entities={mockEntitiesWithConnections}
+        activeMap={mapWithEntitiesOnMap}
+      />);
+
+      const toggleButton = screen.getByTitle('Toggle entity connections');
+      expect(toggleButton.textContent).toContain('Connections ON');
+    });
+
+    it('shows Connections OFF when connections are hidden', () => {
+      const mapWithConnectionsOff: Map = {
+        ...mapWithEntitiesOnMap,
+        data: {
+          ...mapWithEntitiesOnMap.data,
+          showConnections: false,
+        },
+      };
+
+      render(<MapEditor
+        {...defaultProps}
+        entities={mockEntitiesWithConnections}
+        activeMap={mapWithConnectionsOff}
+      />);
+
+      const toggleButton = screen.getByTitle('Toggle entity connections');
+      expect(toggleButton.textContent).toContain('Connections OFF');
+    });
+
+    it('calls onUpdateMap when toggle button is clicked', () => {
+      const onUpdateMap = vi.fn();
+      render(<MapEditor
+        {...defaultProps}
+        entities={mockEntitiesWithConnections}
+        activeMap={mapWithEntitiesOnMap}
+        onUpdateMap={onUpdateMap}
+      />);
+
+      const toggleButton = screen.getByTitle('Toggle entity connections');
+      fireEvent.click(toggleButton);
+
+      expect(onUpdateMap).toHaveBeenCalled();
+    });
+
+    it('defaults to showing connections when showConnections is not set', () => {
+      const mapWithoutConnectionsFlag: Map = {
+        ...mapWithEntitiesOnMap,
+        data: {
+          ...mapWithEntitiesOnMap.data,
+          showConnections: undefined,
+        },
+      };
+
+      render(<MapEditor
+        {...defaultProps}
+        entities={mockEntitiesWithConnections}
+        activeMap={mapWithoutConnectionsFlag}
+      />);
+
+      const toggleButton = screen.getByTitle('Toggle entity connections');
+      expect(toggleButton.textContent).toContain('Connections ON');
+    });
+
+    it('hides connections when showConnections is false', () => {
+      const mapWithConnectionsOff: Map = {
+        ...mapWithEntitiesOnMap,
+        data: {
+          ...mapWithEntitiesOnMap.data,
+          showConnections: false,
+        },
+      };
+
+      const { container } = render(<MapEditor
+        {...defaultProps}
+        entities={mockEntitiesWithConnections}
+        activeMap={mapWithConnectionsOff}
+      />);
+
+      // Check that no connection paths are rendered
+      const connectionPaths = container.querySelectorAll('.connection-layer path[stroke-dasharray="5,5"]');
+      expect(connectionPaths.length).toBe(0);
+    });
+
+    it('shows connections when showConnections is true', () => {
+      const { container } = render(<MapEditor
+        {...defaultProps}
+        entities={mockEntitiesWithConnections}
+        activeMap={mapWithEntitiesOnMap}
+      />);
+
+      // Check that connection paths are rendered
+      const connectionPaths = container.querySelectorAll('.connection-layer path[stroke-dasharray="5,5"]');
+      expect(connectionPaths.length).toBeGreaterThan(0);
+    });
+  });
 });
