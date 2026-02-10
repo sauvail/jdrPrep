@@ -8,6 +8,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import InventoryManager from './InventoryManager';
 import CharacterBuilder from './CharacterBuilder';
+import { replaceEntityTags } from '../utils/entityTagParser';
 
 interface EntityDetailProps {
   entity: Entity;
@@ -90,7 +91,9 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
   const getMarkdownHTML = () => {
     if (!entity.description) return '';
     try {
-      const rawHTML = marked.parse(entity.description) as string;
+      // First replace entity tags, then parse markdown
+      const textWithEntityTags = replaceEntityTags(entity.description, entities);
+      const rawHTML = marked.parse(textWithEntityTags) as string;
       return DOMPurify.sanitize(rawHTML);
     } catch (error) {
       return entity.description;
@@ -111,6 +114,7 @@ const EntityDetail: React.FC<EntityDetailProps> = ({ entity, entities, onUpdate 
             value={description}
             onChange={setDescription}
             rows={6}
+            entities={entities}
           />
           <div className="form-group">
             <label>Tags:</label>
