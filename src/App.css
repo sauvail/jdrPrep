@@ -1179,7 +1179,7 @@ body {
   padding: 0.75rem;
   border-radius: 8px;
   border: 1px solid #ddd;
-  max-height: 250px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
