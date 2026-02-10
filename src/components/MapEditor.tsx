@@ -66,7 +66,7 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const images = activeMap?.data.images || [];
   const entityPositions = activeMap?.data.entityPositions || {};
   const showGrid = activeMap?.data.showGrid || false;
-  const showConnections = activeMap?.data.showConnections !== false; // Default to true
+  const showConnections = activeMap?.data.showConnections === true; // Default to false
   const gridWidth = activeMap?.data.gridWidth || DEFAULT_GRID_WIDTH;
   const gridHeight = activeMap?.data.gridHeight || DEFAULT_GRID_HEIGHT;
 
