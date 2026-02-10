@@ -169,7 +169,7 @@ describe('MapEditor Entity Filter', () => {
   });
 
   describe('Entity List Display', () => {
-    it('shows all entities in the list, not just unmapped ones', () => {
+    it('shows all entities in the list, including those already on the map', () => {
       const mapWithEntities: Map = {
         ...mockMap,
         data: {
@@ -192,9 +192,41 @@ describe('MapEditor Entity Filter', () => {
       expect(entityList?.textContent).toContain('Goblin King');
       expect(entityList?.textContent).toContain('Dragon Mountain');
       expect(entityList?.textContent).toContain('Magic Sword Quest');
+
+      // Entities already on map should be marked as such
+      expect(entityList?.textContent).toContain('Already on map');
     });
 
-    it('allows clicking on entities to add them to map', () => {
+    it('prevents adding an entity that is already on the map', () => {
+      const mapWithEntity: Map = {
+        ...mockMap,
+        data: {
+          ...mockMap.data,
+          entityPositions: {
+            'entity1': { x: 100, y: 100 },
+          },
+        },
+      };
+
+      const onUpdateMap = vi.fn();
+      const { container } = render(<MapEditor {...defaultProps} activeMap={mapWithEntity} onUpdateMap={onUpdateMap} />);
+
+      // Find the entity that is already on the map
+      const entityList = container.querySelector('.entity-list');
+      const entityItems = entityList?.querySelectorAll('li');
+      const goblinCaveItem = Array.from(entityItems || []).find(
+        item => item.textContent?.includes('Goblin Cave')
+      );
+
+      // Click on entity that is already on the map
+      if (goblinCaveItem) {
+        fireEvent.click(goblinCaveItem);
+        // onUpdateMap should NOT be called because entity is already on map
+        expect(onUpdateMap).not.toHaveBeenCalled();
+      }
+    });
+
+    it('allows clicking on entities not on map to add them to map', () => {
       const onUpdateMap = vi.fn();
       const { container } = render(<MapEditor {...defaultProps} onUpdateMap={onUpdateMap} />);
 
@@ -208,6 +240,44 @@ describe('MapEditor Entity Filter', () => {
       if (goblinCaveItem) {
         fireEvent.click(goblinCaveItem);
         expect(onUpdateMap).toHaveBeenCalled();
+      }
+    });
+
+    it('visually distinguishes entities already on the map', () => {
+      const mapWithEntity: Map = {
+        ...mockMap,
+        data: {
+          ...mockMap.data,
+          entityPositions: {
+            'entity1': { x: 100, y: 100 },
+          },
+        },
+      };
+
+      const { container } = render(<MapEditor {...defaultProps} activeMap={mapWithEntity} />);
+
+      const entityList = container.querySelector('.entity-list');
+      const entityItems = entityList?.querySelectorAll('li');
+
+      // Find Goblin Cave (on map) and Dragon Mountain (not on map)
+      const goblinCaveItem = Array.from(entityItems || []).find(
+        item => item.textContent?.includes('Goblin Cave')
+      ) as HTMLElement;
+
+      const dragonMountainItem = Array.from(entityItems || []).find(
+        item => item.textContent?.includes('Dragon Mountain')
+      ) as HTMLElement;
+
+      if (goblinCaveItem && dragonMountainItem) {
+        // Entity on map should have reduced opacity
+        expect(goblinCaveItem.style.opacity).toBe('0.5');
+        expect(goblinCaveItem.style.cursor).toBe('default');
+        expect(goblinCaveItem.textContent).toContain('Already on map');
+
+        // Entity not on map should have full opacity
+        expect(dragonMountainItem.style.opacity).toBe('1');
+        expect(dragonMountainItem.style.cursor).toBe('pointer');
+        expect(dragonMountainItem.textContent).toContain('Click to add to map');
       }
     });
 
